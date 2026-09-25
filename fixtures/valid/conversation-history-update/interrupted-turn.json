@@ -1,0 +1,16 @@
+{
+  "turn_id": "task-77",
+  "started_at": "2026-09-24T17:30:00Z",
+  "completed_at": "2026-09-24T17:30:04Z",
+  "messages": [
+    { "role": "ROLE_USER", "text": "When is my appointment?" },
+    {
+      "role": "ROLE_AGENT",
+      "text": "Your appointment is scheduled for Tuesday at 3 PM. Is there anything else?",
+      "played_text": "Your appointment is scheduled for",
+      "unspoken_text": "Tuesday at 3 PM. Is there anything else?"
+    }
+  ],
+  "source": "interrupted",
+  "topic": "appointments"
+}

@@ -1,0 +1,6 @@
+{
+  "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": "directive",
+  "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directiveType": "say_exactly",
+  "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 3,
+  "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/renderMode": "verbatim"
+}

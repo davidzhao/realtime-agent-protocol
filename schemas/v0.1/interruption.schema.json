@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/interruption.schema.json",
+  "title": "interruption payload",
+  "description": "The DataPart 'data' object the Live layer sends on barge-in, alongside tasks/cancel for the in-flight task (spec §8). The task then transitions to CANCELED and the next utterance begins a new task under the same context (roll-forward model).",
+  "type": "object",
+  "required": [
+    "played_text",
+    "planned_text",
+    "unspoken_text",
+    "interrupted_turn_id",
+    "interrupted_request_guid"
+  ],
+  "properties": {
+    "played_text": {
+      "type": "string",
+      "description": "Text actually heard by the caller."
+    },
+    "planned_text": {
+      "type": "string",
+      "description": "Full planned response."
+    },
+    "unspoken_text": {
+      "type": "string",
+      "description": "Remaining, unspoken portion of the response."
+    },
+    "interrupted_turn_id": {
+      "type": "string",
+      "description": "taskId of the interrupted turn."
+    },
+    "interrupted_request_guid": {
+      "type": "string",
+      "description": "requestGuid of the interrupted response chunk."
+    }
+  }
+}

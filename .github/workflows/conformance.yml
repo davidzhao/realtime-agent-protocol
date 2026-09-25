@@ -1,0 +1,33 @@
+name: conformance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r conformance/requirements.txt
+      - name: Validate schemas are well-formed
+        run: |
+          python - <<'PY'
+          import glob, json, sys
+          from jsonschema import Draft202012Validator
+          ok = True
+          for p in sorted(glob.glob("schemas/v0.1/*.json")):
+              try:
+                  Draft202012Validator.check_schema(json.load(open(p)))
+              except Exception as e:
+                  ok = False
+                  print(f"FAIL {p}: {e}")
+          sys.exit(0 if ok else 1)
+          PY
+      - name: Run conformance suite
+        run: pytest conformance/ -q

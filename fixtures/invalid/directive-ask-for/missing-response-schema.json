@@ -1,0 +1,5 @@
+{
+  "fields": [
+    { "name": "zipCode", "required": true }
+  ]
+}

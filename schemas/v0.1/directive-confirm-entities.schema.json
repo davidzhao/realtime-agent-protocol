@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directive-confirm-entities.schema.json",
+  "title": "confirm_entities directive payload",
+  "description": "The DataPart 'data' object of a confirm_entities handoff directive. Delivered on a TaskStatusUpdateEvent that sets state to INPUT_REQUIRED (spec §7, §7.1). Supports two-phase confirmation before a sensitive or destructive operation. The Live layer confirms with the caller and resumes on the same contextId and taskId.",
+  "type": "object",
+  "required": ["entities", "responseSchema"],
+  "properties": {
+    "entities": {
+      "type": "array",
+      "description": "The entities/details to confirm before the sensitive action proceeds.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": {},
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "description": "The sensitive/destructive action being confirmed.",
+      "properties": {
+        "name": { "type": "string" },
+        "destructive": { "type": "boolean" }
+      }
+    },
+    "cancellation": {
+      "type": "object",
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "onCancel": { "type": "string" }
+      }
+    },
+    "responseSchema": {
+      "type": "object",
+      "description": "JSON Schema describing the confirmation result the Live layer returns on resume."
+    }
+  }
+}

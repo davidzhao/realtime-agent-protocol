@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/common.schema.json",
+  "title": "Agentforce Live A2A Profile — common definitions",
+  "description": "Shared enums and reusable subschemas for the Agentforce Live A2A profile v0.1. Metadata keys are shown abbreviated with the 'afl/' prefix, which expands to 'https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/'. Referenced by the other schemas in this directory.",
+  "$defs": {
+    "extensionUri": {
+      "const": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1"
+    },
+    "directiveType": {
+      "type": "string",
+      "description": "Directive name from the negotiated set (spec §7).",
+      "enum": [
+        "say_exactly",
+        "convey",
+        "ask_for",
+        "confirm_entities",
+        "progress",
+        "escalate",
+        "end_session"
+      ]
+    },
+    "eventType": {
+      "type": "string",
+      "description": "Value of the afl/eventType metadata key (spec §5).",
+      "enum": [
+        "directive",
+        "interruption",
+        "conversationHistoryUpdate",
+        "clientCapabilities"
+      ]
+    },
+    "textForm": {
+      "type": "string",
+      "description": "Value of the afl/textForm metadata key on a spoken TextPart (spec §5, §6.2).",
+      "enum": ["normalized", "transcript"]
+    },
+    "renderMode": {
+      "type": "string",
+      "description": "Value of the afl/renderMode metadata key on a spoken directive TextPart (spec §5, §7).",
+      "enum": ["verbatim", "paraphrase"]
+    },
+    "sequenceId": {
+      "type": "integer",
+      "description": "Monotonic, turn-scoped ordering key assigned by the Reasoner to every directive event (spec §5).",
+      "minimum": 0
+    },
+    "endSessionReason": {
+      "type": "string",
+      "description": "Permitted end_session reasons (spec §7.2).",
+      "enum": [
+        "CLOSED_USER_REQUEST",
+        "CLOSED_ACTION",
+        "CLOSED_TRANSFERRED",
+        "EXPIRED",
+        "ERROR",
+        "UNSPECIFIED"
+      ]
+    },
+    "textPart": {
+      "type": "object",
+      "description": "An A2A TextPart. Spoken parts SHOULD carry afl/textForm metadata; an untagged text part is interpreted as transcript (spec §6.2).",
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "dataPart": {
+      "type": "object",
+      "description": "An A2A DataPart carrying a structured 'data' object.",
+      "required": ["data"],
+      "properties": {
+        "data": { "type": "object" },
+        "metadata": { "type": "object" }
+      }
+    }
+  }
+}

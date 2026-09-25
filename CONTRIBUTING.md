@@ -1,38 +1,55 @@
-## Contributing
+# Contributing
 
-1. The [DEVELOPING](DEVELOPING.md) doc has details on how to set up your environment.
-1. Familiarize yourself with the codebase by reading the [docs](https://forcedotcom.github.io/agents/), which you can generate locally by running `yarn docs`.
-1. Create a new issue before starting your project so that we can keep track of
-   what you're trying to add/fix. That way, we can also offer suggestions or
-   let you know if there is already an effort in progress.
-1. Fork this repository (external contributors) or branch off main (committers).
-1. Set up your environment using the information in the [developing](./developing.md) doc.
-1. Create a _topic_ branch in your fork based on the correct branch (usually the **main** branch, see [Branches section](./developing.md)). Note: this step is recommended but technically not required if contributing using a fork.
-1. Edit the code in your fork.
-1. Write appropriate tests for your changes. Try to achieve at least 95% code coverage on any new code. No pull request will be accepted without associated tests.
-1. Sign the CLA (see [CLA](#cla)).
-1. Send us a pull request when you're done. We'll review your code, suggest any needed changes, and merge it in.
-1. Upon merge, a new release of the `@salesforce/agents` library will be published to npmjs with a version bump corresponding to commitizen rules. (see [Releasing](#releasing)).
+Thanks for your interest in improving the **Agentforce Live A2A Profile Extension**.
+This repository is a *specification* project: the normative contract lives in
+[`spec.md`](spec.md), supported by JSON Schemas, reference fixtures, a conformance
+suite, and reference implementations. There is no published package to install.
 
-## Pull Requests
+## How to propose a change
 
-### Committing
+1. **Open an issue first.** Before starting work, file an issue describing the
+   problem or enhancement (use the appropriate template under
+   [`.github/ISSUE_TEMPLATE`](.github/ISSUE_TEMPLATE)). This lets us track the effort,
+   offer guidance, and avoid duplicated work. Spec-clarification issues are especially
+   welcome — ambiguity in the prose is a defect.
+2. **Discuss the design.** Normative changes (anything with MUST/SHOULD/MAY, a new
+   directive, a payload field, or a state transition) should reach rough consensus in
+   the issue before a PR. See [`GOVERNANCE.md`](GOVERNANCE.md) for the decision process
+   and versioning rules.
+3. **Fork** (external contributors) or **branch off `main`** (committers), and create a
+   topic branch.
+4. **Make the change consistently across artifacts.** A change to normative behavior in
+   `spec.md` generally requires matching updates to the JSON Schemas (`schemas/`),
+   fixtures (`fixtures/`), and the conformance suite (`conformance/`). Keep them in sync.
+5. **Validate locally** before opening a PR (see below).
+6. **Sign the CLA** (see [CLA](#cla)).
+7. **Open a pull request** using the PR template. Describe the spec sections affected and
+   confirm the conformance suite passes.
 
-We enforce commit message format. We recommend using [commitizen](https://github.com/commitizen/cz-cli) by installing it with `npm install -g commitizen` and running `npm run commit-init`. When you commit, we recommend that you use `npm run commit`, which prompts you with a series of questions to format the commit message. Or you can use our VS Code Task `Commit`.
+## Validating your change
 
-The commit message format that we expect is: `type: commit message`. Valid types are: feat, fix, improvement, docs, style, refactor, perf, test, build, ci, chore and revert.
+The machine-checkable artifacts are validated with Python. From the repo root:
 
-Before commit and push, Husky runs several hooks to ensure the commit message is in the correct format and that everything lints and compiles properly.
+```bash
+pip install -r conformance/requirements.txt   # or: pip install jsonschema pytest
+pytest conformance/                            # schema + behavioral conformance tests
+```
 
-### CLA
+Schema and fixture changes must keep `pytest conformance/` green; CI enforces this on
+every PR.
 
-External contributors are required to sign a Contributor's License
-Agreement. You can do so by going to <https://cla.salesforce.com/sign-cla>.
+## Commit messages
 
-### Merging Pull Requests
+We use [Conventional Commits](https://www.conventionalcommits.org/): `type: summary`.
+Common types here: `spec`, `schema`, `fixtures`, `conformance`, `docs`, `chore`, `ci`.
+Example: `spec: clarify sequenceId ordering across event channels`.
 
-Pull request merging is restricted to squash and merge only.
+## CLA
 
-## Releasing
+External contributors are required to sign a Contributor's License Agreement. You can do
+so at <https://cla.salesforce.com/sign-cla>.
 
-- A new version of this library (`@salesforce/agents`) will be published upon merging PRs to `main`, with the version number increment based on commitizen rules. E.g., if any commit message begins with, "feat:" the minor version will be bumped. If any commit message begins with, "fix:" the patch version will be bumped.
+## Merging
+
+Pull request merging is restricted to squash-and-merge. Reviews are routed by
+[`CODEOWNERS`](CODEOWNERS).

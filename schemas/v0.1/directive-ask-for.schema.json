@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directive-ask-for.schema.json",
+  "title": "ask_for directive payload",
+  "description": "The DataPart 'data' object of an ask_for handoff directive. Delivered on a TaskStatusUpdateEvent that sets state to INPUT_REQUIRED (spec §7, §7.1). The Live layer collects the requested information and resumes the task by sending a ROLE_USER message with the structured data on the same contextId and taskId.",
+  "type": "object",
+  "required": ["fields", "responseSchema"],
+  "properties": {
+    "fields": {
+      "type": "array",
+      "description": "The fields to collect from the caller.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "required": { "type": "boolean", "default": true },
+          "validators": {
+            "type": "array",
+            "description": "Validation rules the Live layer should apply before resuming.",
+            "items": { "type": "object" }
+          }
+        }
+      }
+    },
+    "cancellation": {
+      "type": "object",
+      "description": "Cancellation behavior for the collection dialogue.",
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "onCancel": { "type": "string" }
+      }
+    },
+    "responseSchema": {
+      "type": "object",
+      "description": "JSON Schema describing the structured data the Live layer must return on resume."
+    }
+  }
+}

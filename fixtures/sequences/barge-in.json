@@ -1,0 +1,59 @@
+{
+  "description": "Barge-in: partial spoken output, then tasks/cancel + interruption, task transitions to CANCELED, next utterance starts a new task under the same context (roll-forward, spec §8).",
+  "contextId": "ctx-abc",
+  "events": [
+    {
+      "kind": "TaskArtifactUpdateEvent",
+      "taskId": "task-102",
+      "append": false,
+      "lastChunk": false,
+      "metadata": {
+        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 0
+      },
+      "artifact": {
+        "artifactId": "art-2",
+        "parts": [
+          {
+            "text": "Your appointment is scheduled for",
+            "metadata": {
+              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "tasks/cancel",
+      "taskId": "task-102"
+    },
+    {
+      "kind": "message/stream",
+      "role": "ROLE_USER",
+      "metadata": {
+        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": "interruption"
+      },
+      "parts": [
+        {
+          "data": {
+            "played_text": "Your appointment is scheduled for",
+            "planned_text": "Your appointment is scheduled for Tuesday at 3 PM. Is there anything else?",
+            "unspoken_text": "Tuesday at 3 PM. Is there anything else?",
+            "interrupted_turn_id": "task-102",
+            "interrupted_request_guid": "req-9c2f"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "TaskStatusUpdateEvent",
+      "taskId": "task-102",
+      "status": { "state": "CANCELED" },
+      "final": true
+    },
+    {
+      "kind": "message/stream",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "Actually, cancel it." }]
+    }
+  ]
+}

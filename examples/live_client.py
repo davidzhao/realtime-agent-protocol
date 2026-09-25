@@ -1,0 +1,165 @@
+"""Minimal reference Live layer (A2A client) for the Agentforce Live profile v0.1.
+
+Illustrative only. Connects to the reference reasoner, negotiates the extension via the
+``A2A-Extensions`` handshake header (spec §4.1), then runs four scenarios and self-checks
+the results: happy-path turn, ask_for handoff + resume, escalate, and a barge-in cancel of
+an in-flight (INPUT_REQUIRED) task. Exits non-zero if any check fails.
+
+Run (with the server already listening):  python -m examples.live_client
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import sys
+
+from websockets.asyncio.client import connect
+
+from examples.profile_messages import (
+    AFL,
+    EXT_URI,
+    K_DIRECTIVE_TYPE,
+    K_SEQUENCE_ID,
+    interruption_message,
+    user_message,
+)
+
+URI = "ws://localhost:8765"
+
+
+class RpcConn:
+    def __init__(self, ws):
+        self.ws = ws
+        self._id = 0
+
+    async def send(self, method: str, params: dict) -> None:
+        self._id += 1
+        await self.ws.send(json.dumps(
+            {"jsonrpc": "2.0", "id": self._id, "method": method, "params": params}))
+
+    async def collect_turn(self) -> list[dict]:
+        """Read streamed events until the turn reaches a terminal or paused state,
+        ordered by sequenceId. INPUT_REQUIRED pauses the turn without a final flag."""
+        stop_states = {"COMPLETED", "CANCELED", "FAILED", "REJECTED", "INPUT_REQUIRED"}
+        events: list[dict] = []
+        async for raw in self.ws:
+            msg = json.loads(raw)
+            if msg.get("method") != "event":
+                continue
+            event = msg["params"]
+            events.append(event)
+            state = event.get("status", {}).get("state")
+            if event.get("final") or state in stop_states:
+                break
+        return _ordered(events)
+
+
+def _seq(event: dict):
+    """afl/sequenceId lives in top-level metadata (artifact events) or in
+    status.message.metadata (status-channel directives)."""
+    top = (event.get("metadata") or {}).get(K_SEQUENCE_ID)
+    if top is not None:
+        return top
+    sm = (event.get("status") or {}).get("message") or {}
+    return (sm.get("metadata") or {}).get(K_SEQUENCE_ID)
+
+
+def _ordered(events: list[dict]) -> list[dict]:
+    """Spec §5 — order by afl/sequenceId; events without one keep their arrival slot."""
+    return sorted(events, key=lambda e: _seq(e) if _seq(e) is not None else 1e9)
+
+
+def _directive_types(events: list[dict]) -> list[str]:
+    out = []
+    for e in events:
+        meta = e.get("metadata") or {}
+        if K_DIRECTIVE_TYPE in meta:
+            out.append(meta[K_DIRECTIVE_TYPE])
+        else:
+            sm = (e.get("status") or {}).get("message") or {}
+            dt = (sm.get("metadata") or {}).get(K_DIRECTIVE_TYPE)
+            if dt:
+                out.append(dt)
+    return out
+
+
+def _final_state(events: list[dict]) -> str | None:
+    for e in reversed(events):
+        if e.get("final"):
+            return e.get("status", {}).get("state")
+    return None
+
+
+def _check(name: str, ok: bool, results: list[tuple[str, bool]]) -> None:
+    results.append((name, ok))
+    print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+
+
+async def run() -> int:
+    results: list[tuple[str, bool]] = []
+    async with connect(URI, additional_headers={"A2A-Extensions": EXT_URI}) as ws:
+        echoed = ws.response.headers.get("A2A-Extensions", "")
+        _check("extension negotiated (§4.1)", EXT_URI in echoed, results)
+        conn = RpcConn(ws)
+
+        # 1. happy path
+        print("scenario: happy-path turn")
+        await conn.send("message/stream", {"message": user_message("What is my balance?")})
+        ev = await conn.collect_turn()
+        seqs = [_seq(e) for e in ev if _seq(e) is not None]
+        _check("sequenceIds monotonic (§5)", seqs == sorted(seqs) and seqs == [0, 1, 2],
+               results)
+        _check("ends COMPLETED (§6.2)", _final_state(ev) == "COMPLETED", results)
+        _check("emitted convey spoken output (§7)", "convey" in _directive_types(ev),
+               results)
+
+        # 2. ask_for handoff + resume (§7.1)
+        print("scenario: ask_for handoff + resume")
+        await conn.send("message/stream",
+                        {"message": user_message("I need to update my zip code")})
+        ev = await conn.collect_turn()
+        ask = ev[0]
+        task_id = ask["taskId"]
+        _check("ask_for -> INPUT_REQUIRED (§7.1)",
+               ask["status"]["state"] == "INPUT_REQUIRED"
+               and "ask_for" in _directive_types(ev), results)
+        # resume on the same taskId with structured data
+        resume = user_message("", task_id=task_id)
+        resume["parts"] = [{"data": {"zipCode": "94105"}}]
+        await conn.send("message/stream", {"message": resume})
+        ev = await conn.collect_turn()
+        _check("resume completes turn (§7.1)",
+               _final_state(ev) == "COMPLETED"
+               and "say_exactly" in _directive_types(ev), results)
+
+        # 3. escalate (§7.2)
+        print("scenario: escalate")
+        await conn.send("message/stream",
+                        {"message": user_message("Please transfer me to a human")})
+        ev = await conn.collect_turn()
+        _check("escalate -> COMPLETED (§7.2)",
+               "escalate" in _directive_types(ev) and _final_state(ev) == "COMPLETED",
+               results)
+
+        # 4. barge-in: cancel an in-flight (awaiting-input) task (§8)
+        print("scenario: barge-in cancel")
+        await conn.send("message/stream",
+                        {"message": user_message("what's my address on file")})
+        ev = await conn.collect_turn()
+        task_id = ev[0]["taskId"]
+        await conn.send("tasks/cancel", {"taskId": task_id})
+        # the Live layer also reports what the caller heard (spec §8)
+        await conn.send("message/stream", {"message": interruption_message(
+            played="", planned="What ZIP code?", unspoken="What ZIP code?",
+            task_id=task_id, request_guid="req-1")})
+        ev = await conn.collect_turn()
+        _check("cancel -> CANCELED (§8)", _final_state(ev) == "CANCELED", results)
+
+    passed = sum(1 for _, ok in results if ok)
+    print(f"\n{passed}/{len(results)} checks passed")
+    return 0 if passed == len(results) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(asyncio.run(run()))

@@ -1,0 +1,63 @@
+{
+  "description": "A full happy-path turn: user transcript in, streamed spoken output, terminal COMPLETED (spec §6).",
+  "contextId": "ctx-abc",
+  "events": [
+    {
+      "kind": "message/stream",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "What is my account balance?" }]
+    },
+    {
+      "kind": "TaskArtifactUpdateEvent",
+      "taskId": "task-101",
+      "append": false,
+      "lastChunk": false,
+      "metadata": {
+        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 0
+      },
+      "artifact": {
+        "artifactId": "art-1",
+        "parts": [
+          {
+            "text": "Your balance is one thousand two hundred thirty four dollars and fifty six cents.",
+            "metadata": {
+              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "normalized"
+            }
+          },
+          {
+            "text": "Your balance is $1,234.56.",
+            "metadata": {
+              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "TaskArtifactUpdateEvent",
+      "taskId": "task-101",
+      "append": true,
+      "lastChunk": true,
+      "metadata": {
+        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 1
+      },
+      "artifact": {
+        "artifactId": "art-1",
+        "parts": [
+          {
+            "text": " Anything else?",
+            "metadata": {
+              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "TaskStatusUpdateEvent",
+      "taskId": "task-101",
+      "status": { "state": "COMPLETED" },
+      "final": true
+    }
+  ]
+}

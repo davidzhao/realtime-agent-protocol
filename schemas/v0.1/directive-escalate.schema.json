@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directive-escalate.schema.json",
+  "title": "escalate directive payload",
+  "description": "The DataPart 'data' object of an escalate directive. Delivered on a TaskStatusUpdateEvent that reaches terminal COMPLETED (spec §7, §7.2). Routing details (queue IDs, flow IDs, SIP endpoints) are deployment-specific and MUST NOT be required by this profile; if present they live under 'routingHints' and carry no normative meaning in v0.1.",
+  "type": "object",
+  "required": ["message", "reason"],
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Caller-facing message to speak before/around the transfer."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Implementation-neutral escalation reason (not a routing target)."
+    },
+    "routingHints": {
+      "type": "object",
+      "description": "Optional, non-normative deployment-specific routing details. See spec §11 (a normative escalation routing schema is out of scope for v0.1)."
+    }
+  }
+}

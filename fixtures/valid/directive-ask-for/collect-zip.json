@@ -1,0 +1,23 @@
+{
+  "fields": [
+    {
+      "name": "zipCode",
+      "description": "The caller's 5-digit US ZIP code",
+      "required": true,
+      "validators": [
+        { "type": "regex", "pattern": "^\\d{5}$" }
+      ]
+    }
+  ],
+  "cancellation": {
+    "allowed": true,
+    "onCancel": "resume_without_value"
+  },
+  "responseSchema": {
+    "type": "object",
+    "required": ["zipCode"],
+    "properties": {
+      "zipCode": { "type": "string" }
+    }
+  }
+}
