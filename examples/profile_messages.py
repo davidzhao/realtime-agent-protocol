@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-EXT_URI = "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1"
+EXT_URI = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1"
 AFL = EXT_URI + "/"
 
 # Metadata keys (spec §5)

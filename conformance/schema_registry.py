@@ -33,7 +33,7 @@ _REGISTRY = _load_registry()
 def validator_for(schema_name: str) -> Draft202012Validator:
     """Return a validator for ``schemas/v0.1/<schema_name>.schema.json``."""
     uri = (
-        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/"
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/"
         f"{schema_name}.schema.json"
     )
     schema = _REGISTRY.get_or_retrieve(uri).value.contents

@@ -6,7 +6,7 @@ assert against the spec's rules rather than against a particular server.
 
 from __future__ import annotations
 
-AFL = "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/"
+AFL = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/"
 
 TERMINAL_STATES = {"COMPLETED", "CANCELED", "FAILED", "REJECTED"}
 

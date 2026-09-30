@@ -21,7 +21,7 @@ from rules import (
 from schema_registry import REPO_ROOT
 
 SEQUENCES = REPO_ROOT / "fixtures" / "sequences"
-EXT_URI = "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1"
+EXT_URI = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1"
 
 
 # §4.1 — extension negotiation and echo

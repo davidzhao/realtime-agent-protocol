@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/common.schema.json",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/common.schema.json",
   "title": "Agentforce Live A2A Profile — common definitions",
-  "description": "Shared enums and reusable subschemas for the Agentforce Live A2A profile v0.1. Metadata keys are shown abbreviated with the 'afl/' prefix, which expands to 'https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/'. Referenced by the other schemas in this directory.",
+  "description": "Shared enums and reusable subschemas for the Agentforce Live A2A profile v0.1. Metadata keys are shown abbreviated with the 'afl/' prefix, which expands to 'https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/'. Referenced by the other schemas in this directory.",
   "$defs": {
     "extensionUri": {
-      "const": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1"
+      "const": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1"
     },
     "directiveType": {
       "type": "string",

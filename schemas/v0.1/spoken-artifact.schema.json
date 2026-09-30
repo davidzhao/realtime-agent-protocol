@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/spoken-artifact.schema.json",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/spoken-artifact.schema.json",
   "title": "Spoken output artifact",
   "description": "An A2A artifact carrying user-facing spoken output, streamed via TaskArtifactUpdateEvent (spec §6.2). Also the shape used by the say_exactly and convey directives on the artifact channel (spec §7); those additionally carry directive metadata (see directive-metadata.schema.json) with renderMode verbatim/paraphrase. Each chunk SHOULD contain both a normalized TextPart (for TTS) and a transcript TextPart (for history/UI); an untagged text part is interpreted as transcript.",
   "type": "object",
@@ -19,7 +19,7 @@
               "metadata": {
                 "type": "object",
                 "properties": {
-                  "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": {
+                  "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": {
                     "$ref": "common.schema.json#/$defs/textForm"
                   }
                 }

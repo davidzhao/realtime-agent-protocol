@@ -13,7 +13,7 @@
       "append": false,
       "lastChunk": false,
       "metadata": {
-        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 0
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/sequenceId": 0
       },
       "artifact": {
         "artifactId": "art-1",
@@ -21,13 +21,13 @@
           {
             "text": "Your balance is one thousand two hundred thirty four dollars and fifty six cents.",
             "metadata": {
-              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "normalized"
+              "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": "normalized"
             }
           },
           {
             "text": "Your balance is $1,234.56.",
             "metadata": {
-              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+              "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": "transcript"
             }
           }
         ]
@@ -39,7 +39,7 @@
       "append": true,
       "lastChunk": true,
       "metadata": {
-        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 1
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/sequenceId": 1
       },
       "artifact": {
         "artifactId": "art-1",
@@ -47,7 +47,7 @@
           {
             "text": " Anything else?",
             "metadata": {
-              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+              "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": "transcript"
             }
           }
         ]

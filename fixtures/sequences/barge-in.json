@@ -8,7 +8,7 @@
       "append": false,
       "lastChunk": false,
       "metadata": {
-        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": 0
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/sequenceId": 0
       },
       "artifact": {
         "artifactId": "art-2",
@@ -16,7 +16,7 @@
           {
             "text": "Your appointment is scheduled for",
             "metadata": {
-              "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/textForm": "transcript"
+              "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": "transcript"
             }
           }
         ]
@@ -30,7 +30,7 @@
       "kind": "message/stream",
       "role": "ROLE_USER",
       "metadata": {
-        "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": "interruption"
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType": "interruption"
       },
       "parts": [
         {

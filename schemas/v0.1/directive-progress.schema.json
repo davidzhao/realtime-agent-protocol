@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directive-progress.schema.json",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/directive-progress.schema.json",
   "title": "progress directive payload",
   "description": "The DataPart 'data' object of a progress directive. Delivered on a TaskStatusUpdateEvent that remains WORKING (spec §7, §7.2).",
   "type": "object",

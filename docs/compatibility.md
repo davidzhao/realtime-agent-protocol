@@ -9,7 +9,7 @@ A2A baseline MUST be stated by the implementation."
 
 | Item | Value | Notes |
 | --- | --- | --- |
-| Profile version | `v0.1` (draft) | Extension URI `https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1` |
+| Profile version | `v0.1` (draft) | Extension URI `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1` |
 | Core A2A constructs used | `Message`, `Task`, `TaskArtifactUpdateEvent`, `TaskStatusUpdateEvent`, task states, `contextId`/`taskId`, metadata, `TextPart`, `DataPart` | No new RPC methods or task states are defined (spec §1). |
 | A2A methods used | `message/stream`, `tasks/cancel` | `tasks/resubscribe` is reserved for a future version (spec §11). |
 | Task states relied on | `WORKING`, `INPUT_REQUIRED`, `COMPLETED`, `CANCELED`, `FAILED` | Terminal state — not an SDK `final` flag — is the end-of-turn signal (spec §6.2). |

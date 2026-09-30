@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/agent-card-extension.schema.json",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/agent-card-extension.schema.json",
   "title": "Agent Card extension entry",
   "description": "One entry in the Agent Card's capabilities.extensions[] array advertising the Agentforce Live profile (spec §4). For v0.1 'required' MUST be false.",
   "type": "object",

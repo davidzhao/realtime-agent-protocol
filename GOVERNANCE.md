@@ -13,7 +13,7 @@ normative contract is [`spec.md`](spec.md); this document governs how it evolves
 The profile is versioned through its **extension URI**:
 
 ```
-https://schemas.salesforce.com/a2a/ext/agentforce-live/<version>
+https://schemas.salesforce.com/a2a/ext/realtime-agent/<version>
 ```
 
 - The version segment (e.g. `v0.1`) is the single source of truth for the profile

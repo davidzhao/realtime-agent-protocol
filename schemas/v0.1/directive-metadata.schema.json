@@ -1,25 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directive-metadata.schema.json",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/directive-metadata.schema.json",
   "title": "Directive event metadata",
   "description": "Metadata object carried by every directive event, whether it travels on the artifact channel (say_exactly, convey) or the status channel (ask_for, confirm_entities, progress, escalate, end_session). See spec §5 and §7. Keys use the full extension-URI prefix.",
   "type": "object",
   "required": [
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType",
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directiveType",
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId"
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType",
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/directiveType",
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/sequenceId"
   ],
   "properties": {
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": {
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType": {
       "const": "directive"
     },
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/directiveType": {
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/directiveType": {
       "$ref": "common.schema.json#/$defs/directiveType"
     },
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/sequenceId": {
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/sequenceId": {
       "$ref": "common.schema.json#/$defs/sequenceId"
     },
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/renderMode": {
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/renderMode": {
       "$ref": "common.schema.json#/$defs/renderMode"
     }
   }

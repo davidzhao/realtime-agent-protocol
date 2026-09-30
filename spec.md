@@ -1,7 +1,7 @@
 # Agentforce Live A2A Profile Extension
 
 **Status:** Draft v0.1  
-**Extension URI:** `https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1`
+**Extension URI:** `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1`
 
 ## 1. Purpose and scope
 
@@ -71,7 +71,7 @@ offered as compatible fallback bindings.
   "capabilities": {
     "streaming": true,
     "extensions": [{
-      "uri": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1",
+      "uri": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1",
       "description": "Realtime conversation directives",
       "required": false,
       "params": {
@@ -111,7 +111,7 @@ message tagged `clientCapabilities`:
 {
   "role": "ROLE_USER",
   "metadata": {
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": "clientCapabilities"
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType": "clientCapabilities"
   },
   "parts": [{
     "data": { "directiveTypes": ["say_exactly", "convey", "progress", "end_session"] }
@@ -129,7 +129,7 @@ supported conversational output where possible; otherwise it MUST fail the task.
 
 All profile-specific payloads use the extension URI as a metadata-key prefix. In
 examples, `afl/` abbreviates
-`https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/`.
+`https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/`.
 
 | Metadata key | Required on | Meaning |
 | --- | --- | --- |

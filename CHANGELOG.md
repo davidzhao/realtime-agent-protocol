@@ -4,7 +4,7 @@ All notable changes to the Agentforce Live A2A Profile Extension are documented 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This
 project versions the extension via its URI
-(`https://schemas.salesforce.com/a2a/ext/agentforce-live/<version>`); see
+(`https://schemas.salesforce.com/a2a/ext/realtime-agent/<version>`); see
 [`GOVERNANCE.md`](GOVERNANCE.md) for the versioning and evolution rules.
 
 ## [Unreleased]

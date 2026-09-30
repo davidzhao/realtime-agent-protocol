@@ -9,11 +9,11 @@ Schemas are grouped by profile version under `schemas/<version>/`. Each schema's
 is its published URL under the extension-URI namespace:
 
 ```
-https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/<name>.schema.json
+https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/<name>.schema.json
 ```
 
 The profile version in the `$id` path matches the version segment of the extension URI
-(`https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1`). A breaking change to any
+(`https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1`). A breaking change to any
 payload bumps the extension URI version and creates a new `schemas/<version>/` directory;
 see [`../GOVERNANCE.md`](../GOVERNANCE.md).
 
@@ -40,9 +40,9 @@ resolves both when hosted at the published URLs and when validated from a local 
 ## Metadata keys
 
 The spec abbreviates profile metadata keys with the `afl/` prefix, which expands to
-`https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/`. On the wire the keys are
+`https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/`. On the wire the keys are
 full URIs, so the schemas use the expanded form (e.g.
-`https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType`).
+`https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType`).
 
 ## Validating
 
