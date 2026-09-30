@@ -6,10 +6,12 @@ the results: happy-path turn, ask_for handoff + resume, escalate, and a barge-in
 an in-flight (INPUT_REQUIRED) task. Exits non-zero if any check fails.
 
 Run (with the server already listening):  python -m examples.live_client
+Add ``-v``/``--verbose`` to pretty-print every JSON-RPC payload sent and received.
 """
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import sys
@@ -28,15 +30,27 @@ from examples.profile_messages import (
 URI = "ws://localhost:8765"
 
 
+def _dump(direction: str, payload: dict) -> None:
+    """Pretty-print a JSON-RPC payload for review. ``direction`` is a short label
+    such as ``send`` or ``recv``."""
+    arrow = {"send": "->", "recv": "<-"}.get(direction, direction)
+    print(f"  {arrow} {direction}")
+    for line in json.dumps(payload, indent=2, sort_keys=True).splitlines():
+        print(f"    {line}")
+
+
 class RpcConn:
-    def __init__(self, ws):
+    def __init__(self, ws, verbose: bool = False):
         self.ws = ws
         self._id = 0
+        self.verbose = verbose
 
     async def send(self, method: str, params: dict) -> None:
         self._id += 1
-        await self.ws.send(json.dumps(
-            {"jsonrpc": "2.0", "id": self._id, "method": method, "params": params}))
+        payload = {"jsonrpc": "2.0", "id": self._id, "method": method, "params": params}
+        if self.verbose:
+            _dump("send", payload)
+        await self.ws.send(json.dumps(payload))
 
     async def collect_turn(self) -> list[dict]:
         """Read streamed events until the turn reaches a terminal or paused state,
@@ -45,6 +59,8 @@ class RpcConn:
         events: list[dict] = []
         async for raw in self.ws:
             msg = json.loads(raw)
+            if self.verbose:
+                _dump("recv", msg)
             if msg.get("method") != "event":
                 continue
             event = msg["params"]
@@ -96,12 +112,12 @@ def _check(name: str, ok: bool, results: list[tuple[str, bool]]) -> None:
     print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
 
 
-async def run() -> int:
+async def run(verbose: bool = False) -> int:
     results: list[tuple[str, bool]] = []
     async with connect(URI, additional_headers={"A2A-Extensions": EXT_URI}) as ws:
         echoed = ws.response.headers.get("A2A-Extensions", "")
         _check("extension negotiated (§4.1)", EXT_URI in echoed, results)
-        conn = RpcConn(ws)
+        conn = RpcConn(ws, verbose=verbose)
 
         # 1. happy path
         print("scenario: happy-path turn")
@@ -162,4 +178,8 @@ async def run() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(asyncio.run(run()))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="pretty-print every JSON-RPC payload sent and received")
+    args = parser.parse_args()
+    sys.exit(asyncio.run(run(verbose=args.verbose)))
