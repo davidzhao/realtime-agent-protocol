@@ -1,0 +1,6 @@
+{
+  "fields": [
+    { "name": "zipCode", "required": true }
+  ],
+  "cancellation": { "allowed": true, "onCancel": "resume_without_value" }
+}

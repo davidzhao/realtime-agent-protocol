@@ -1,0 +1,10 @@
+{
+  "fields": [
+    { "name": "zipCode", "required": true }
+  ],
+  "responseSchema": {
+    "type": "object",
+    "required": ["zipCode"],
+    "properties": { "zipCode": { "type": "string" } }
+  }
+}

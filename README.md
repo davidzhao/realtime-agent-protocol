@@ -1,4 +1,4 @@
-# Agentforce Live A2A Profile Extension
+# Realtime Agent A2A Profile Extension
 
 This repository defines an optional A2A profile for real-time, steerable voice and
 multimodal conversations. It standardizes the boundary between a media-facing
@@ -24,45 +24,48 @@ states.
 The v0.1 profile is text-in/text-and-directives-out. ASR, TTS, media transport, and
 call control remain the Live layer's responsibility.
 
-## What this repository still needs
+## Supporting artifacts
 
-`spec.md` is the contract, but it is not sufficient for interoperable production
-implementations. The following artifacts should be added before declaring a stable
-release:
+`spec.md` is the contract; these artifacts make it machine-checkable, implementable, and
+governed. Status against the original v0.1 gap list:
 
-| Artifact | Why it is needed |
-| --- | --- |
-| JSON Schemas | Machine-validate Agent Card extension parameters, metadata, all directive payloads, interruption, and history updates. Publish versioned schema URLs. |
-| Conformance suite | Make the normative requirements executable: negotiation, ordering, task lifecycle, invalid payloads, fallback, and cancel/interrupt cases. |
-| Reference fixtures | Provide valid and invalid JSON-RPC/WebSocket transcripts, Agent Cards, and expected event sequences for every directive. |
-| Reference implementation(s) | Demonstrate both Live-client and Reasoner-server behavior, including event ordering and reconnection boundaries. |
-| Compatibility matrix | State the exact A2A baseline(s), SDK versions, transport support, and `A2A-Extensions` versus `X-A2A-Extensions` behavior. |
-| Security profile | Specify authentication, authorization, tenant isolation, PII redaction/retention, rate limits, audit events, and WebSocket/TLS requirements. |
-| Error and retry policy | Define stable error codes, retryability, idempotency/replay semantics, timeouts, and delivery guarantees. |
-| Escalation design | Finalize the neutral escalation payload and the transfer-outcome handshake without coupling to a specific contact-center routing system. |
-| Operational profile | Define observability fields, metrics, trace propagation, limits, backpressure, graceful drain, reconnect, and resubscribe behavior. |
-| Governance | Add versioning and extension-evolution rules, change control, owners, contribution guidance, and a license. |
+| Artifact | Status | Location |
+| --- | --- | --- |
+| JSON Schemas | ✅ draft | [`schemas/v0.1/`](schemas/) — versioned, one per payload |
+| Reference fixtures | ✅ draft | [`fixtures/`](fixtures/) — valid/invalid + event sequences |
+| Conformance suite | ✅ draft | [`conformance/`](conformance/) — `pytest`, schema + behavioral |
+| Reference implementation(s) | ✅ illustrative | [`examples/`](examples/) — Python Live client + Reasoner server |
+| Compatibility matrix | ✅ draft | [`docs/compatibility.md`](docs/compatibility.md) |
+| Security profile | ✅ draft | [`docs/security.md`](docs/security.md) |
+| Error and retry policy | ✅ draft | [`docs/errors.md`](docs/errors.md) |
+| Escalation design | ✅ draft | [`docs/escalation.md`](docs/escalation.md) |
+| Operational profile | ✅ draft | [`docs/operations.md`](docs/operations.md) |
+| Governance | ✅ | [`GOVERNANCE.md`](GOVERNANCE.md), [`CHANGELOG.md`](CHANGELOG.md), [`LICENSE`](LICENSE) |
 
-## Suggested repository layout
+## Repository layout
 
 ```text
-spec.md                         # normative profile specification
-schemas/                        # versioned JSON Schema documents
-fixtures/                       # Agent Cards and wire-level examples
-conformance/                    # executable interoperability tests
-examples/live-client/           # minimal Live-layer client
-examples/reasoner-server/       # minimal Reasoner server
-docs/compatibility.md           # A2A/SDK/transport support
-docs/security.md                # threat model and controls
-docs/operations.md              # observability and lifecycle behavior
-CHANGELOG.md
-CONTRIBUTING.md
-LICENSE
+spec.md                         # normative profile specification (source of truth)
+schemas/v0.1/                   # versioned JSON Schema documents (2020-12)
+fixtures/                       # valid/ and invalid/ payloads + sequences/ event flows
+conformance/                    # pytest suite enforcing the normative requirements
+examples/                       # reference Live client + Reasoner server (Python)
+docs/                           # compatibility, security, errors, escalation, operations
+GOVERNANCE.md  CHANGELOG.md  CONTRIBUTING.md  DEVELOPING.md  LICENSE
 ```
 
 ## Current open design items
 
-The v0.1 draft intentionally leaves media-carrying A2A, graceful connection drain
-and replay, and a portable escalation routing/transfer-result contract for later
-versions. These need resolution alongside the schemas and conformance suite before
-a production interoperability commitment.
+The v0.1 draft still intentionally leaves the following for later versions; they are
+tracked through [`GOVERNANCE.md`](GOVERNANCE.md) and sketched (non-normatively) in `docs/`:
+
+- **Media-carrying A2A** — audio/video bytes across this boundary (spec §11).
+- **Graceful connection drain, reconnect, and replay** — future `draining`/`endOfConnection`
+  events and `tasks/resubscribe` recovery (spec §11; sketch in [`docs/operations.md`](docs/operations.md)).
+- **Portable escalation routing / transfer-result contract** — a neutral design is proposed
+  in [`docs/escalation.md`](docs/escalation.md) but is not yet normative in `spec.md`.
+- **Pinned A2A SDK names/versions** for a production interoperability commitment
+  (see [`docs/compatibility.md`](docs/compatibility.md)).
+
+The reference implementations under `examples/` are illustrative teaching aids, not
+production code.

@@ -1,0 +1,7 @@
+{
+  "message": "I'll connect you with a specialist who can help. One moment.",
+  "reason": "REQUIRES_HUMAN_JUDGMENT",
+  "routingHints": {
+    "skill": "billing-disputes"
+  }
+}

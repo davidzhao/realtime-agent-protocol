@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/conversation-history-update.schema.json",
+  "title": "conversationHistoryUpdate payload",
+  "description": "The DataPart 'data' object the Live layer MAY send in a ROLE_USER message to backfill a locally handled turn or an interrupted response (spec §8). The Live layer is authoritative for what the caller actually heard.",
+  "type": "object",
+  "required": ["turn_id", "started_at", "completed_at", "messages", "source"],
+  "properties": {
+    "turn_id": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "messages": {
+      "type": "array",
+      "description": "The messages exchanged during the backfilled turn.",
+      "items": {
+        "type": "object",
+        "required": ["role", "text"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["ROLE_USER", "ROLE_AGENT"]
+          },
+          "text": { "type": "string" },
+          "played_text": {
+            "type": "string",
+            "description": "For a truncated response, the portion actually played."
+          },
+          "unspoken_text": {
+            "type": "string",
+            "description": "For a truncated response, the portion not played."
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "description": "Origin of the backfilled turn (e.g. locally handled, interrupted)."
+    },
+    "topic": { "type": "string" }
+  }
+}

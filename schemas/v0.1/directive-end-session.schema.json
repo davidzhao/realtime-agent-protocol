@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/directive-end-session.schema.json",
+  "title": "end_session directive payload",
+  "description": "The DataPart 'data' object of an end_session directive. Delivered on a TaskStatusUpdateEvent that reaches terminal COMPLETED (spec §7, §7.2). The Live layer speaks the final text and closes the call/session.",
+  "type": "object",
+  "required": ["reason", "text", "normalized_text", "transcript_text"],
+  "properties": {
+    "reason": { "$ref": "common.schema.json#/$defs/endSessionReason" },
+    "text": {
+      "type": "string",
+      "description": "Final message (generic form)."
+    },
+    "normalized_text": {
+      "type": "string",
+      "description": "TTS-optimized final message."
+    },
+    "transcript_text": {
+      "type": "string",
+      "description": "History/UI-suitable final message."
+    }
+  }
+}

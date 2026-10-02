@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/agent-card-extension.schema.json",
+  "title": "Agent Card extension entry",
+  "description": "One entry in the Agent Card's capabilities.extensions[] array advertising the Realtime Agent profile (spec §4). For v0.1 'required' MUST be false.",
+  "type": "object",
+  "required": ["uri", "required", "params"],
+  "properties": {
+    "uri": { "$ref": "common.schema.json#/$defs/extensionUri" },
+    "description": { "type": "string" },
+    "required": {
+      "const": false,
+      "description": "The extension is optional; Agent Cards MUST set required=false for v0.1 (spec §4.1)."
+    },
+    "params": {
+      "type": "object",
+      "description": "Extension parameters.",
+      "required": ["directiveTypes"],
+      "properties": {
+        "directiveTypes": {
+          "type": "array",
+          "description": "Directive types the Reasoner can emit (spec §4.2).",
+          "items": { "$ref": "common.schema.json#/$defs/directiveType" },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

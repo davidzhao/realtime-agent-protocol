@@ -1,0 +1,21 @@
+{
+  "entities": [
+    { "name": "amount", "value": "500.00", "description": "Transfer amount in USD" },
+    { "name": "toAccount", "value": "****4321", "description": "Destination account" }
+  ],
+  "action": {
+    "name": "funds_transfer",
+    "destructive": true
+  },
+  "cancellation": {
+    "allowed": true,
+    "onCancel": "abort_action"
+  },
+  "responseSchema": {
+    "type": "object",
+    "required": ["confirmed"],
+    "properties": {
+      "confirmed": { "type": "boolean" }
+    }
+  }
+}

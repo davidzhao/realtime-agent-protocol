@@ -1,7 +1,7 @@
-# Agentforce Live A2A Profile Extension
+# Realtime Agent A2A Profile Extension
 
 **Status:** Draft v0.1  
-**Extension URI:** `https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1`
+**Extension URI:** `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1`
 
 ## 1. Purpose and scope
 
@@ -51,9 +51,9 @@ The Live layer SHOULD provide these correlation identifiers in metadata:
 
 | Identifier | Metadata key | Purpose |
 | --- | --- | --- |
-| Turn | `afl/turnId` | Mirrors `taskId` for simple joins |
-| Interaction | `afl/interactionId` | Per-turn analytics key; echoed by the Reasoner |
-| Request chunk | `afl/requestGuid` | Chunk-level correlation |
+| Turn | `rta/turnId` | Mirrors `taskId` for simple joins |
+| Interaction | `rta/interactionId` | Per-turn analytics key; echoed by the Reasoner |
+| Request chunk | `rta/requestGuid` | Chunk-level correlation |
 
 ## 4. Discovery, transport, and activation
 
@@ -71,7 +71,7 @@ offered as compatible fallback bindings.
   "capabilities": {
     "streaming": true,
     "extensions": [{
-      "uri": "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1",
+      "uri": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1",
       "description": "Realtime conversation directives",
       "required": false,
       "params": {
@@ -99,7 +99,8 @@ implementations use the compatibility spelling `X-A2A-Extensions`.
 
 An echoed URI means the extension is active for the session. If it is not echoed,
 the client MUST use the fallback behavior in section 9. The extension is optional:
-Agent Cards MUST set `required` to `false` for v0.1.
+Agent Cards MUST set `required` to `false` for v0.1. The extension entry MUST include
+`params.directiveTypes` listing the directive types the Reasoner can emit.
 
 ### 4.2 Client directive capabilities
 
@@ -111,7 +112,7 @@ message tagged `clientCapabilities`:
 {
   "role": "ROLE_USER",
   "metadata": {
-    "https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/eventType": "clientCapabilities"
+    "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType": "clientCapabilities"
   },
   "parts": [{
     "data": { "directiveTypes": ["say_exactly", "convey", "progress", "end_session"] }
@@ -128,18 +129,18 @@ supported conversational output where possible; otherwise it MUST fail the task.
 ## 5. Profile envelope and ordering
 
 All profile-specific payloads use the extension URI as a metadata-key prefix. In
-examples, `afl/` abbreviates
-`https://schemas.salesforce.com/a2a/ext/agentforce-live/v0.1/`.
+examples, `rta/` abbreviates
+`https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/`.
 
 | Metadata key | Required on | Meaning |
 | --- | --- | --- |
-| `afl/eventType` | Profile messages/events | `directive`, `interruption`, `conversationHistoryUpdate`, or `clientCapabilities` |
-| `afl/directiveType` | Directive events | Directive name from the negotiated set |
-| `afl/sequenceId` | Directive artifacts and status events | Monotonic, turn-scoped ordering key |
-| `afl/textForm` | Spoken `TextPart` | `normalized` or `transcript` |
-| `afl/renderMode` | Spoken directive `TextPart` | `verbatim` or `paraphrase` |
+| `rta/eventType` | Profile messages/events | `directive`, `interruption`, `conversationHistoryUpdate`, or `clientCapabilities` |
+| `rta/directiveType` | Directive events | Directive name from the negotiated set |
+| `rta/sequenceId` | Directive artifacts and status events | Monotonic, turn-scoped ordering key |
+| `rta/textForm` | Spoken `TextPart` | `normalized` or `transcript` |
+| `rta/renderMode` | Spoken directive `TextPart` | `verbatim` or `paraphrase` |
 
-The Reasoner MUST assign a monotonic `afl/sequenceId` to every directive event.
+The Reasoner MUST assign a monotonic `rta/sequenceId` to every directive event.
 The Live layer MUST order artifacts and status events for the same turn by that
 value, rather than assuming that separate A2A event channels preserve a shared
 order.
@@ -156,13 +157,14 @@ is the identifier for that turn.
 ### 6.2 Spoken output
 
 The Reasoner streams user-facing output as `TaskArtifactUpdateEvent` events. One
-artifact represents one response. Non-final chunks use `append: true`; the final
-chunk sets `lastChunk: true`.
+artifact represents one response and MUST carry an `artifactId` that is unique within
+the task, so chunks and history entries can be tracked. Non-final chunks use
+`append: true`; the final chunk sets `lastChunk: true`.
 
 Each spoken chunk SHOULD contain both:
 
-* a `TextPart` tagged `afl/textForm=normalized`, optimized for TTS; and
-* a `TextPart` tagged `afl/textForm=transcript`, suitable for history and UI.
+* a `TextPart` tagged `rta/textForm=normalized`, optimized for TTS; and
+* a `TextPart` tagged `rta/textForm=transcript`, suitable for history and UI.
 
 An untagged text part is interpreted as transcript. Artifacts or parts SHOULD also
 carry sequence and timestamp metadata.
@@ -173,8 +175,8 @@ the end-of-turn signal.
 
 ## 7. Directives
 
-Every directive is an `afl/eventType=directive` payload and MUST have
-`afl/directiveType` and `afl/sequenceId` metadata. Its channel is determined by
+Every directive is an `rta/eventType=directive` payload and MUST have
+`rta/directiveType` and `rta/sequenceId` metadata. Its channel is determined by
 its purpose:
 
 | Directive | A2A channel and state | Meaning |
@@ -226,17 +228,25 @@ The Live layer performs the transfer and reports its outcome in its next
 ## 8. Interruption and history backfill
 
 On barge-in, the Live layer MUST send `tasks/cancel` for the in-flight task and
-MUST send an `afl/eventType=interruption` `DataPart` containing:
+MUST send an `rta/eventType=interruption` `DataPart`. It SHOULD contain the
+following fields when the Live layer has them:
 
 ```json
 {
   "played_text": "text heard by the caller",
   "planned_text": "full planned response",
   "unspoken_text": "remaining response",
-  "interrupted_turn_id": "<taskId>",
+  "interrupted_task_id": "<taskId>",
   "interrupted_request_guid": "<requestGuid>"
 }
 ```
+
+Every field is optional, because some Live layers cannot observe playback. When a
+field is absent, the Reasoner SHOULD make a best-effort assumption:
+
+* no `played_text`: treat the whole planned response as unplayed when updating history;
+* no `interrupted_task_id`: assume the most recent task in the context;
+* no `interrupted_request_guid`: correlate at the task level only.
 
 The task transitions to `CANCELED`. The next utterance begins a new task under the
 same context; v0.1 uses this roll-forward model and does not roll back partial work.

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/interruption.schema.json",
+  "title": "interruption payload",
+  "description": "The DataPart 'data' object the Live layer sends on barge-in, alongside tasks/cancel for the in-flight task (spec §8). The task then transitions to CANCELED and the next utterance begins a new task under the same context (roll-forward model). Every field is optional: the Live layer SHOULD send each field it can supply, and the Reasoner applies the per-field fallback when one is absent.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "played_text": {
+      "type": "string",
+      "description": "Text actually heard by the caller. If absent, the Reasoner SHOULD treat the whole planned response as unplayed."
+    },
+    "planned_text": {
+      "type": "string",
+      "description": "Full planned response. If absent, the Reasoner SHOULD use the response it generated for the interrupted task."
+    },
+    "unspoken_text": {
+      "type": "string",
+      "description": "Remaining, unspoken portion of the response. If absent, the Reasoner SHOULD derive it from planned_text and played_text."
+    },
+    "interrupted_task_id": {
+      "type": "string",
+      "description": "taskId of the interrupted task. If absent, the Reasoner SHOULD assume the most recent task in the context."
+    },
+    "interrupted_request_guid": {
+      "type": "string",
+      "description": "requestGuid of the interrupted response chunk. If absent, the Reasoner SHOULD correlate at the task level only."
+    }
+  }
+}
