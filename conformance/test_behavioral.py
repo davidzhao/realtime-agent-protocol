@@ -71,7 +71,7 @@ def test_non_monotonic_sequence_detected():
 
 
 # §6.2 — reaching a terminal A2A state ends the turn
-@pytest.mark.parametrize("state", ["COMPLETED", "CANCELED", "FAILED"])
+@pytest.mark.parametrize("state", ["COMPLETED", "CANCELED", "FAILED", "REJECTED"])
 def test_terminal_states(state):
     assert is_terminal(state)
 
@@ -98,7 +98,7 @@ def test_barge_in_cancels_then_rolls_forward():
         e for e in seq["events"]
         if (e.get("metadata") or {}).get(RTA + "eventType") == "interruption"
     )
-    assert interruption["parts"][0]["data"]["interrupted_turn_id"] == "task-102"
+    assert interruption["parts"][0]["data"]["interrupted_task_id"] == "task-102"
     # the interrupted task reaches CANCELED
     canceled = next(
         e for e in seq["events"]

@@ -8,6 +8,8 @@ Scripted behavior keyed on the user's transcript demonstrates each directive:
   * "transfer" / "human" / "agent"  -> escalate  (terminal COMPLETED)
   * "bye" / "goodbye" / "done"       -> end_session (terminal COMPLETED)
   * "zip" / "address"                -> ask_for (INPUT_REQUIRED), resumes on structured input
+  * "pay" / "payment"                -> confirm_entities (INPUT_REQUIRED), resumes on
+                                        {"confirmed": true|false}
   * anything else                    -> progress + convey spoken output (COMPLETED)
 
 Run:  python -m examples.reasoner_server
@@ -23,6 +25,8 @@ from websockets.asyncio.server import serve
 
 from examples.profile_messages import (
     EXT_URI,
+    ask_for_data,
+    confirm_entities_data,
     end_session_data,
     escalate_data,
     progress_data,
@@ -43,7 +47,9 @@ def _echo_extensions(connection, request, response):
     return response
 
 
-async def _send(ws, event: dict) -> None:
+async def _send(ws, state: dict, event: dict) -> None:
+    """Stream one event, stamped with the session's contextId (spec §3)."""
+    event = {"contextId": state["contextId"], **event}
     await ws.send(json.dumps({"jsonrpc": "2.0", "method": "event", "params": event}))
 
 
@@ -52,7 +58,7 @@ async def _run_turn(ws, text: str, task_id: str, state: dict) -> None:
     seq = itertools.count(0)
 
     if any(w in lower for w in ("transfer", "human", "agent")):
-        await _send(ws, status_directive_event(
+        await _send(ws, state, status_directive_event(
             task_id, next(seq), "escalate", "COMPLETED",
             escalate_data("Connecting you with a specialist now.",
                           "REQUIRES_HUMAN_JUDGMENT"),
@@ -60,48 +66,60 @@ async def _run_turn(ws, text: str, task_id: str, state: dict) -> None:
         return
 
     if any(w in lower for w in ("bye", "goodbye", "done")):
-        await _send(ws, status_directive_event(
+        await _send(ws, state, status_directive_event(
             task_id, next(seq), "end_session", "COMPLETED",
             end_session_data("CLOSED_USER_REQUEST", "Thanks for calling. Goodbye!"),
             final=True))
         return
 
     if any(w in lower for w in ("zip", "address")):
-        await _send(ws, status_directive_event(
-            task_id, next(seq), "ask_for", "INPUT_REQUIRED", {
-                "fields": [{"name": "zipCode", "required": True,
-                            "validators": [{"type": "regex", "pattern": r"^\d{5}$"}]}],
-                "responseSchema": {"type": "object", "required": ["zipCode"],
-                                   "properties": {"zipCode": {"type": "string"}}},
-            }))
-        state["awaiting"][task_id] = seq  # resume continues the same seq counter
+        await _send(ws, state, status_directive_event(
+            task_id, next(seq), "ask_for", "INPUT_REQUIRED", ask_for_data(
+                [{"name": "zipCode", "required": True,
+                  "validators": [{"type": "regex", "pattern": r"^\d{5}$"}]}],
+                {"type": "object", "required": ["zipCode"],
+                 "properties": {"zipCode": {"type": "string"}}})))
+        # resume continues the same seq counter
+        state["awaiting"][task_id] = (seq, "ask_for")
+        return
+
+    if any(w in lower for w in ("pay", "payment")):
+        await _send(ws, state, status_directive_event(
+            task_id, next(seq), "confirm_entities", "INPUT_REQUIRED",
+            confirm_entities_data(
+                [{"name": "amount", "value": "120.00", "description": "Payment in USD"},
+                 {"name": "fromAccount", "value": "****4321"}],
+                {"name": "bill_payment", "destructive": True})))
+        state["awaiting"][task_id] = (seq, "confirm_entities")
         return
 
     # default: progress filler, then a conveyed spoken response, then COMPLETED
-    await _send(ws, status_directive_event(
+    await _send(ws, state, status_directive_event(
         task_id, next(seq), "progress", "WORKING",
         progress_data("Let me look that up.")))
-    await _send(ws, spoken_artifact_event(
+    await _send(ws, state, spoken_artifact_event(
         task_id, next(seq), "Here is what I found.", "Here's what I found.",
         append=False, last_chunk=False, directive_type="convey",
         render_mode="paraphrase"))
-    await _send(ws, spoken_artifact_event(
+    await _send(ws, state, spoken_artifact_event(
         task_id, next(seq), "Anything else?", "Anything else?",
         append=True, last_chunk=True, directive_type="convey",
         render_mode="paraphrase"))
-    await _send(ws, status_event(task_id, "COMPLETED", final=True))
+    await _send(ws, state, status_event(task_id, "COMPLETED", final=True))
 
 
 async def _resume_turn(ws, task_id: str, data: dict, state: dict) -> None:
-    seq = state["awaiting"].pop(task_id)
-    zip_code = data.get("zipCode", "unknown")
-    await _send(ws, spoken_artifact_event(
-        task_id, next(seq),
-        f"Thanks, I have your ZIP code as {zip_code}.",
-        f"Thanks, I have your ZIP code as {zip_code}.",
+    seq, directive = state["awaiting"].pop(task_id)
+    if directive == "confirm_entities":
+        text = ("Done. Your payment of $120.00 has been submitted." if data.get("confirmed")
+                else "Okay, I've cancelled that payment.")
+    else:
+        text = f"Thanks, I have your ZIP code as {data.get('zipCode', 'unknown')}."
+    await _send(ws, state, spoken_artifact_event(
+        task_id, next(seq), text, text,
         append=False, last_chunk=True, directive_type="say_exactly",
         render_mode="verbatim"))
-    await _send(ws, status_event(task_id, "COMPLETED", final=True))
+    await _send(ws, state, status_event(task_id, "COMPLETED", final=True))
 
 
 async def handler(ws) -> None:
@@ -133,7 +151,7 @@ async def handler(ws) -> None:
         elif method == "tasks/cancel":
             task_id = params.get("taskId")
             state["awaiting"].pop(task_id, None)
-            await _send(ws, status_event(task_id, "CANCELED", final=True))
+            await _send(ws, state, status_event(task_id, "CANCELED", final=True))
 
 
 async def main(host: str = "localhost", port: int = 8765) -> None:

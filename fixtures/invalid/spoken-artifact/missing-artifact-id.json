@@ -1,0 +1,11 @@
+{
+  "name": "response",
+  "parts": [
+    {
+      "text": "Your balance is $1,234.56.",
+      "metadata": {
+        "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/textForm": "transcript"
+      }
+    }
+  ]
+}

@@ -1,9 +1,11 @@
 """Minimal reference Live layer (A2A client) for the Realtime Agent profile v0.1.
 
 Illustrative only. Connects to the reference reasoner, negotiates the extension via the
-``A2A-Extensions`` handshake header (spec §4.1), then runs four scenarios and self-checks
-the results: happy-path turn, ask_for handoff + resume, escalate, and a barge-in cancel of
-an in-flight (INPUT_REQUIRED) task. Exits non-zero if any check fails.
+``A2A-Extensions`` handshake header (spec §4.1), then runs five scenarios and self-checks
+the results: happy-path turn, ask_for handoff + resume, escalate, confirm_entities
+handoff + resume, and a barge-in cancel of an in-flight (INPUT_REQUIRED) task. The
+contextId the Reasoner returns on the first turn is sent on every later message
+(spec §3). Exits non-zero if any check fails.
 
 Run (with the server already listening):  python -m examples.live_client
 Add ``-v``/``--verbose`` to pretty-print every JSON-RPC payload sent and received.
@@ -19,7 +21,6 @@ import sys
 from websockets.asyncio.client import connect
 
 from examples.profile_messages import (
-    RTA,
     EXT_URI,
     K_DIRECTIVE_TYPE,
     K_SEQUENCE_ID,
@@ -44,6 +45,9 @@ class RpcConn:
         self.ws = ws
         self._id = 0
         self.verbose = verbose
+        # spec §3: the Reasoner creates the contextId and returns it; we reuse it
+        self.context_id: str | None = None
+        self.seen_context_ids: set[str | None] = set()
 
     async def send(self, method: str, params: dict) -> None:
         self._id += 1
@@ -65,6 +69,9 @@ class RpcConn:
                 continue
             event = msg["params"]
             events.append(event)
+            self.seen_context_ids.add(event.get("contextId"))
+            if self.context_id is None:
+                self.context_id = event.get("contextId")
             state = event.get("status", {}).get("state")
             if event.get("final") or state in stop_states:
                 break
@@ -133,7 +140,8 @@ async def run(verbose: bool = False) -> int:
         # 2. ask_for handoff + resume (§7.1)
         print("scenario: ask_for handoff + resume")
         await conn.send("message/stream",
-                        {"message": user_message("I need to update my zip code")})
+                        {"message": user_message("I need to update my zip code",
+                                                     context_id=conn.context_id)})
         ev = await conn.collect_turn()
         ask = ev[0]
         task_id = ask["taskId"]
@@ -141,7 +149,7 @@ async def run(verbose: bool = False) -> int:
                ask["status"]["state"] == "INPUT_REQUIRED"
                and "ask_for" in _directive_types(ev), results)
         # resume on the same taskId with structured data
-        resume = user_message("", task_id=task_id)
+        resume = user_message("", task_id=task_id, context_id=conn.context_id)
         resume["parts"] = [{"data": {"zipCode": "94105"}}]
         await conn.send("message/stream", {"message": resume})
         ev = await conn.collect_turn()
@@ -152,25 +160,51 @@ async def run(verbose: bool = False) -> int:
         # 3. escalate (§7.2)
         print("scenario: escalate")
         await conn.send("message/stream",
-                        {"message": user_message("Please transfer me to a human")})
+                        {"message": user_message("Please transfer me to a human",
+                                                     context_id=conn.context_id)})
         ev = await conn.collect_turn()
         _check("escalate -> COMPLETED (§7.2)",
                "escalate" in _directive_types(ev) and _final_state(ev) == "COMPLETED",
                results)
 
-        # 4. barge-in: cancel an in-flight (awaiting-input) task (§8)
+        # 4. confirm_entities handoff + resume (§7.1)
+        print("scenario: confirm_entities handoff + resume")
+        await conn.send("message/stream",
+                        {"message": user_message("I'd like to pay my bill",
+                                                 context_id=conn.context_id)})
+        ev = await conn.collect_turn()
+        confirm = ev[0]
+        task_id = confirm["taskId"]
+        _check("confirm_entities -> INPUT_REQUIRED (§7.1)",
+               confirm["status"]["state"] == "INPUT_REQUIRED"
+               and "confirm_entities" in _directive_types(ev), results)
+        # the caller confirms; resume on the same taskId with the confirmation result
+        resume = user_message("", task_id=task_id, context_id=conn.context_id)
+        resume["parts"] = [{"data": {"confirmed": True}}]
+        await conn.send("message/stream", {"message": resume})
+        ev = await conn.collect_turn()
+        _check("confirmation completes turn (§7.1)",
+               _final_state(ev) == "COMPLETED"
+               and "say_exactly" in _directive_types(ev), results)
+
+        # 5. barge-in: cancel an in-flight (awaiting-input) task (§8)
         print("scenario: barge-in cancel")
         await conn.send("message/stream",
-                        {"message": user_message("what's my address on file")})
+                        {"message": user_message("what's my address on file",
+                                                 context_id=conn.context_id)})
         ev = await conn.collect_turn()
         task_id = ev[0]["taskId"]
         await conn.send("tasks/cancel", {"taskId": task_id})
         # the Live layer also reports what the caller heard (spec §8)
         await conn.send("message/stream", {"message": interruption_message(
             played="", planned="What ZIP code?", unspoken="What ZIP code?",
-            task_id=task_id, request_guid="req-1")})
+            task_id=task_id, request_guid="req-1", context_id=conn.context_id)})
         ev = await conn.collect_turn()
         _check("cancel -> CANCELED (§8)", _final_state(ev) == "CANCELED", results)
+
+    _check("contextId returned and reused (§3)",
+           conn.context_id is not None and conn.seen_context_ids == {conn.context_id},
+           results)
 
     passed = sum(1 for _, ok in results if ok)
     print(f"\n{passed}/{len(results)} checks passed")

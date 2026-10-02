@@ -99,7 +99,8 @@ implementations use the compatibility spelling `X-A2A-Extensions`.
 
 An echoed URI means the extension is active for the session. If it is not echoed,
 the client MUST use the fallback behavior in section 9. The extension is optional:
-Agent Cards MUST set `required` to `false` for v0.1.
+Agent Cards MUST set `required` to `false` for v0.1. The extension entry MUST include
+`params.directiveTypes` listing the directive types the Reasoner can emit.
 
 ### 4.2 Client directive capabilities
 
@@ -156,8 +157,9 @@ is the identifier for that turn.
 ### 6.2 Spoken output
 
 The Reasoner streams user-facing output as `TaskArtifactUpdateEvent` events. One
-artifact represents one response. Non-final chunks use `append: true`; the final
-chunk sets `lastChunk: true`.
+artifact represents one response and MUST carry an `artifactId` that is unique within
+the task, so chunks and history entries can be tracked. Non-final chunks use
+`append: true`; the final chunk sets `lastChunk: true`.
 
 Each spoken chunk SHOULD contain both:
 
@@ -226,17 +228,25 @@ The Live layer performs the transfer and reports its outcome in its next
 ## 8. Interruption and history backfill
 
 On barge-in, the Live layer MUST send `tasks/cancel` for the in-flight task and
-MUST send an `rta/eventType=interruption` `DataPart` containing:
+MUST send an `rta/eventType=interruption` `DataPart`. It SHOULD contain the
+following fields when the Live layer has them:
 
 ```json
 {
   "played_text": "text heard by the caller",
   "planned_text": "full planned response",
   "unspoken_text": "remaining response",
-  "interrupted_turn_id": "<taskId>",
+  "interrupted_task_id": "<taskId>",
   "interrupted_request_guid": "<requestGuid>"
 }
 ```
+
+Every field is optional, because some Live layers cannot observe playback. When a
+field is absent, the Reasoner SHOULD make a best-effort assumption:
+
+* no `played_text`: treat the whole planned response as unplayed when updating history;
+* no `interrupted_task_id`: assume the most recent task in the context;
+* no `interrupted_request_guid`: correlate at the task level only.
 
 The task transitions to `CANCELED`. The next utterance begins a new task under the
 same context; v0.1 uses this roll-forward model and does not roll back partial work.

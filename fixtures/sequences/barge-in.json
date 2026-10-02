@@ -38,7 +38,7 @@
             "played_text": "Your appointment is scheduled for",
             "planned_text": "Your appointment is scheduled for Tuesday at 3 PM. Is there anything else?",
             "unspoken_text": "Tuesday at 3 PM. Is there anything else?",
-            "interrupted_turn_id": "task-102",
+            "interrupted_task_id": "task-102",
             "interrupted_request_guid": "req-9c2f"
           }
         }

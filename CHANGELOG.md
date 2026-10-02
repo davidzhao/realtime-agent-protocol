@@ -19,7 +19,8 @@ project versions the extension via its URI
 - **Conformance suite** (`conformance/`) — pytest suite (schema validation + behavioral
   rules) with a spec-section mapping; wired into CI (`.github/workflows/conformance.yml`).
 - **Reference implementations** (`examples/`) — Python Live client and Reasoner server
-  over WebSocket JSON-RPC, self-checking four scenarios.
+  over WebSocket JSON-RPC, self-checking five scenarios (including a `confirm_entities`
+  handoff) and the `contextId` round-trip; `live_client -v` dumps every payload.
 - **Docs** (`docs/`) — compatibility matrix, security profile, error/retry policy,
   escalation design, and operational profile.
 - **Governance** — `GOVERNANCE.md` (versioning + change control), `DEVELOPING.md`,
@@ -30,6 +31,15 @@ project versions the extension via its URI
   stale `@salesforce/agents` npm-library boilerplate and the broken `DEVELOPING.md` links).
 - Reconciled `README.md` — replaced the "still needs" list with an artifact-status table
   and an accurate repository layout.
+- Renamed the extension URI namespace from `agentforce-live` to `realtime-agent`, dropped
+  Agentforce branding, and renamed the `afl/` metadata-key shorthand to `rta/`.
+- **Breaking (schemas):** `artifactId` is now required on spoken artifacts,
+  `params` on the Agent Card extension entry, and `cancellation` on `ask_for` and
+  `confirm_entities`.
+- **Breaking (interruption):** renamed `interrupted_turn_id` to `interrupted_task_id`
+  (also in the escalation-outcome payload); every interruption field is now optional,
+  with Reasoner fallback rules in spec §8.
+- `REJECTED` is listed with the terminal task states in the docs and conformance tests.
 
 ## [0.1.0-draft] — 2025-09-11
 

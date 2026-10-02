@@ -31,6 +31,11 @@ python -m examples.reasoner_server
 python -m examples.live_client
 ```
 
-Expected output ends with `8/8 checks passed` and exit code 0. The client exercises:
+Expected output ends with `11/11 checks passed` and exit code 0. The client exercises:
 a happy-path turn (progress + convey + COMPLETED), an `ask_for` handoff and resume, an
-`escalate`, and a barge-in `tasks/cancel` of an in-flight `INPUT_REQUIRED` task.
+`escalate`, a `confirm_entities` handoff and resume, and a barge-in `tasks/cancel` of an
+in-flight `INPUT_REQUIRED` task. It also checks that the `contextId` returned on the first
+turn is reused on every later message (spec §3).
+
+Add `-v` / `--verbose` to the client to pretty-print every JSON-RPC payload sent and
+received.

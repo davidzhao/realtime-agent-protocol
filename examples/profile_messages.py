@@ -108,6 +108,28 @@ def escalate_data(message: str, reason: str, routing_hints: dict | None = None) 
     return data
 
 
+def ask_for_data(fields: list[dict], response_schema: dict, *,
+                 cancel_allowed: bool = True,
+                 on_cancel: str = "resume_without_value") -> dict:
+    return {
+        "fields": fields,
+        "cancellation": {"allowed": cancel_allowed, "onCancel": on_cancel},
+        "responseSchema": response_schema,
+    }
+
+
+def confirm_entities_data(entities: list[dict], action: dict, *,
+                          cancel_allowed: bool = True,
+                          on_cancel: str = "abort_action") -> dict:
+    return {
+        "entities": entities,
+        "action": action,
+        "cancellation": {"allowed": cancel_allowed, "onCancel": on_cancel},
+        "responseSchema": {"type": "object", "required": ["confirmed"],
+                           "properties": {"confirmed": {"type": "boolean"}}},
+    }
+
+
 def user_message(text: str, *, context_id: str | None = None,
                  task_id: str | None = None) -> dict:
     msg = {"role": "ROLE_USER", "parts": [{"text": text}]}
@@ -118,21 +140,23 @@ def user_message(text: str, *, context_id: str | None = None,
     return msg
 
 
-def interruption_message(played: str, planned: str, unspoken: str,
-                         task_id: str, request_guid: str,
-                         *, context_id: str | None = None) -> dict:
+def interruption_message(*, played: str | None = None, planned: str | None = None,
+                         unspoken: str | None = None, task_id: str | None = None,
+                         request_guid: str | None = None,
+                         context_id: str | None = None) -> dict:
+    """Barge-in report (spec §8). Every field is optional; omitted ones are left out
+    of the payload and the Reasoner falls back to best-effort assumptions."""
+    fields = {
+        "played_text": played,
+        "planned_text": planned,
+        "unspoken_text": unspoken,
+        "interrupted_task_id": task_id,
+        "interrupted_request_guid": request_guid,
+    }
     msg = {
         "role": "ROLE_USER",
         "metadata": {K_EVENT_TYPE: "interruption"},
-        "parts": [{
-            "data": {
-                "played_text": played,
-                "planned_text": planned,
-                "unspoken_text": unspoken,
-                "interrupted_turn_id": task_id,
-                "interrupted_request_guid": request_guid,
-            }
-        }],
+        "parts": [{"data": {k: v for k, v in fields.items() if v is not None}}],
     }
     if context_id:
         msg["contextId"] = context_id

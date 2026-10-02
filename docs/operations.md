@@ -42,7 +42,7 @@ None of these are normative; they are a starting taxonomy for implementers.
 | --- | --- | --- | --- |
 | `turn_latency` | Histogram | Time from `ROLE_USER` message receipt (turn start) to first byte of Reasoner response (artifact or status event). | Core perceived-responsiveness metric. |
 | `time_to_first_artifact` | Histogram | Time from turn start to the first `TaskArtifactUpdateEvent` chunk. | Distinguishes "thinking" latency from streaming/TTS latency. |
-| `turn_completion_latency` | Histogram | Time from turn start to terminal state (`COMPLETED`, `FAILED`, `CANCELED`). | End-to-end turn cost, including handoffs. |
+| `turn_completion_latency` | Histogram | Time from turn start to terminal state (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`). | End-to-end turn cost, including handoffs. |
 | `barge_in_rate` | Counter/ratio | `tasks/cancel` + `interruption` events per completed turn. | Signals response length/relevance problems when elevated. |
 | `directive_count` | Counter, by `rta/directiveType` | Count of each directive type emitted. | Tracks directive mix; spikes in `escalate`/`end_session` with `ERROR` reason indicate trouble. |
 | `failure_rate` | Counter/ratio | Turns reaching `FAILED` divided by total turns. | Primary reliability SLI. Break down by `status.message` error code (spec §7.2). |

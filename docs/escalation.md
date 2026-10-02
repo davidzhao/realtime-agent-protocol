@@ -103,14 +103,14 @@ document flags. Until the schema is updated, implementations SHOULD treat
 | `outcome` | MUST | enum | One of `TRANSFERRED`, `QUEUED`, `FAILED`, `ABANDONED` (§5.3). |
 | `detail` | SHOULD | string | Human-readable, implementation-neutral detail (no routing internals). |
 | `escalation_reason` | MAY | string | Echo of the `reason` from the triggering `escalate` directive, for correlation. |
-| `interrupted_turn_id` | MAY | string | `taskId` of the task that carried the `escalate` directive. |
+| `interrupted_task_id` | MAY | string | `taskId` of the task that carried the `escalate` directive. |
 
 ```json
 {
   "outcome": "FAILED",
   "detail": "Target queue reported no agents available.",
   "escalation_reason": "OUT_OF_SCOPE",
-  "interrupted_turn_id": "task-8821"
+  "interrupted_task_id": "task-8821"
 }
 ```
 

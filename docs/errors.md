@@ -123,7 +123,7 @@ starting recommendations for v0.1 implementations, tunable per deployment:
   §5), not by transport/channel order. Consumers MUST reorder by
   `rta/sequenceId` rather than assume in-order delivery across artifact and
   status event channels.
-* Reaching a terminal A2A state (`COMPLETED`, `FAILED`, `CANCELED`) is the
+* Reaching a terminal A2A state (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) is the
   authoritative end-of-turn signal (spec.md §6.2, §8); an SDK-specific
   "final" flag MUST NOT be relied upon in its place.
 * This profile makes no delivery guarantee across a dropped connection:

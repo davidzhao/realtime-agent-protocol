@@ -1,0 +1,9 @@
+{
+  "entities": [
+    { "name": "amount", "value": "500.00", "description": "Transfer amount in USD" }
+  ],
+  "responseSchema": {
+    "type": "object",
+    "properties": { "confirmed": { "type": "boolean" } }
+  }
+}

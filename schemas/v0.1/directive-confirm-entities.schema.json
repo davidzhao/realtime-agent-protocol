@@ -4,7 +4,7 @@
   "title": "confirm_entities directive payload",
   "description": "The DataPart 'data' object of a confirm_entities handoff directive. Delivered on a TaskStatusUpdateEvent that sets state to INPUT_REQUIRED (spec §7, §7.1). Supports two-phase confirmation before a sensitive or destructive operation. The Live layer confirms with the caller and resumes on the same contextId and taskId.",
   "type": "object",
-  "required": ["entities", "responseSchema"],
+  "required": ["entities", "cancellation", "responseSchema"],
   "properties": {
     "entities": {
       "type": "array",

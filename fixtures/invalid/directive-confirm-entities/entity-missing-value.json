@@ -2,6 +2,7 @@
   "entities": [
     { "name": "amount", "description": "Transfer amount in USD" }
   ],
+  "cancellation": { "allowed": true, "onCancel": "abort_action" },
   "responseSchema": {
     "type": "object",
     "properties": { "confirmed": { "type": "boolean" } }

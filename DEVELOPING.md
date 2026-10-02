@@ -22,7 +22,10 @@ needs" section of [`README.md`](README.md) for current status.
 ## Prerequisites
 
 - Python 3.10+
-- `pip install -r conformance/requirements.txt` (or `pip install jsonschema pytest`)
+- `pip install -r conformance/requirements.txt` (or `pip install jsonschema pytest`) to run
+  the conformance suite
+- `pip install -r examples/requirements.txt` (or `pip install websockets`) to run the
+  reference implementations
 
 ## Common tasks
 
@@ -32,11 +35,12 @@ Validate schemas and run the conformance suite:
 pytest conformance/
 ```
 
-Run the reference implementations end to end (once present):
+Run the reference implementations end to end (requires `examples/requirements.txt`):
 
 ```bash
 python -m examples.reasoner_server      # starts the WebSocket JSON-RPC server
-python -m examples.live_client          # connects, runs a happy-path turn + barge-in
+python -m examples.live_client          # connects, runs every scenario and self-checks
+python -m examples.live_client -v       # same, pretty-printing every payload
 ```
 
 ## Branches

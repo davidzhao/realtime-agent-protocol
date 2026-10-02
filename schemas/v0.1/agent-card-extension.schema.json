@@ -4,7 +4,7 @@
   "title": "Agent Card extension entry",
   "description": "One entry in the Agent Card's capabilities.extensions[] array advertising the Realtime Agent profile (spec §4). For v0.1 'required' MUST be false.",
   "type": "object",
-  "required": ["uri", "required"],
+  "required": ["uri", "required", "params"],
   "properties": {
     "uri": { "$ref": "common.schema.json#/$defs/extensionUri" },
     "description": { "type": "string" },

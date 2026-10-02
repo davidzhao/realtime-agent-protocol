@@ -4,7 +4,7 @@
   "title": "ask_for directive payload",
   "description": "The DataPart 'data' object of an ask_for handoff directive. Delivered on a TaskStatusUpdateEvent that sets state to INPUT_REQUIRED (spec §7, §7.1). The Live layer collects the requested information and resumes the task by sending a ROLE_USER message with the structured data on the same contextId and taskId.",
   "type": "object",
-  "required": ["fields", "responseSchema"],
+  "required": ["fields", "cancellation", "responseSchema"],
   "properties": {
     "fields": {
       "type": "array",
