@@ -1,7 +1,7 @@
 # Security profile
 
 This document expands [`spec.md`](../spec.md) §10 into an implementable threat
-model and control set for the Agentforce Live A2A Profile Extension. It is a
+model and control set for the Realtime Agent A2A Profile Extension. It is a
 draft v0.1 companion document; it does not change any normative requirement in
 `spec.md`, but adds detail where the spec is silent, marked **(design choice)**.
 
@@ -10,7 +10,7 @@ draft v0.1 companion document; it does not change any normative requirement in
 This profile carries transcripts, structured directives, and control metadata
 between a Live layer and a Reasoner (spec.md §1, §3). It carries no audio or
 video bytes (spec.md §11). The controls below apply to that channel: the A2A
-WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
+WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `rta/*` metadata and
 `DataPart` payloads defined in spec.md §5–§8.
 
 ## 2. Authentication
@@ -21,7 +21,7 @@ WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
   for the scheme advertised in its own Agent Card; it MUST NOT silently fall
   back to an unauthenticated mode.
 * Credential material (tokens, API keys, client certificates) MUST NOT be
-  carried in `afl/*` metadata or directive `DataPart` payloads. Those channels
+  carried in `rta/*` metadata or directive `DataPart` payloads. Those channels
   are for conversational/control data only.
 * **(design choice)** For the `wss` transport, credential exchange SHOULD occur
   during the WebSocket upgrade (e.g. `Authorization` header or equivalent
@@ -62,7 +62,7 @@ WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
   negotiated capabilities across tenants sharing infrastructure.
 * **(design choice)** Multi-tenant Reasoner deployments SHOULD derive the
   tenant identity from the authenticated principal (§2 above), not from
-  client-supplied metadata such as `afl/interactionId`, since the latter is
+  client-supplied metadata such as `rta/interactionId`, since the latter is
   Live-layer-controlled and MUST NOT be trusted as an isolation boundary.
 
 ## 5. PII redaction and retention
@@ -71,8 +71,8 @@ WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
   telemetry (spec.md §10). This applies to transcripts (spec.md §6.1, §6.2),
   `conversationHistoryUpdate` payloads (spec.md §8), and `confirm_entities`
   entity data (spec.md §7.1).
-* Correlation identifiers (`afl/turnId`, `afl/interactionId`,
-  `afl/requestGuid`; spec.md §3) MUST be treated as operational metadata, not
+* Correlation identifiers (`rta/turnId`, `rta/interactionId`,
+  `rta/requestGuid`; spec.md §3) MUST be treated as operational metadata, not
   as caller PII; they MAY appear in logs, but the transcript/entity payloads
   they key MUST NOT appear unredacted in general-purpose logs or telemetry.
 * **(design choice)** Where full transcripts must be retained for support or
@@ -131,13 +131,13 @@ WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
 ## 9. Extension-activation validation and directive/message bounds
 
 * Implementations SHOULD validate extension activation before interpreting
-  profile data (spec.md §10): a peer MUST NOT act on `afl/*` metadata unless
+  profile data (spec.md §10): a peer MUST NOT act on `rta/*` metadata unless
   the extension URI was echoed in `A2A-Extensions` (or `X-A2A-Extensions`) per
   spec.md §4.1. Unechoed profile data MUST be treated per the degraded-mode
   rules in spec.md §9.
 * Implementations SHOULD validate directive schemas and field values (spec.md
-  §10) — e.g. `afl/directiveType` is in the negotiated effective set (spec.md
-  §4.2), `afl/sequenceId` is present and monotonic (spec.md §5), `end_session`
+  §10) — e.g. `rta/directiveType` is in the negotiated effective set (spec.md
+  §4.2), `rta/sequenceId` is present and monotonic (spec.md §5), `end_session`
   carries all required fields with a permitted `reason` (spec.md §7.2). Schema
   validation failures MUST fail the task with core `FAILED` and a stable error
   code (see [`errors.md`](errors.md)); they MUST NOT be silently ignored,
@@ -161,20 +161,20 @@ WebSocket/HTTP/SSE/gRPC transport, the Agent Card, and all `afl/*` metadata and
 | Threat | Control |
 | --- | --- |
 | Unauthenticated or spoofed peer connects to Reasoner/Live layer | Agent Card's declared A2A auth scheme is mandatory (§2); reject sessions without valid credentials |
-| Credentials leaked via profile payloads | Prohibit credential material in `afl/*` metadata or `DataPart` (§2) |
+| Credentials leaked via profile payloads | Prohibit credential material in `rta/*` metadata or `DataPart` (§2) |
 | Cross-tenant data leakage via shared `contextId` handling | Tenant binding per `contextId`; no cross-tenant capability caching (§4) |
 | Caller confirms a destructive action without authorization | Authorization check on `confirm_entities`/`escalate`, independent of caller confirmation (§3) |
 | Unauthorized transfer target selected via `escalate` | Live-layer authorization check before executing transfer (§3) |
 | Sensitive caller data exposed in logs/telemetry/audit trails | PII redaction requirement; separate access-controlled transcript store (§5, §7) |
 | Denial of service via message floods or barge-in storms | Per-session/tenant rate limits; fail with stable error code on limit breach (§6) |
 | Eavesdropping or tampering on the wire | Mandatory TLS/`wss` for all bindings (§8) |
-| Acting on profile data when extension was never activated | Validate `A2A-Extensions` echo before interpreting `afl/*` data (§9) |
+| Acting on profile data when extension was never activated | Validate `A2A-Extensions` echo before interpreting `rta/*` data (§9) |
 | Malformed or spoofed directive fields (e.g. fake `escalate` reason) | Schema and field validation on every directive; fail closed with stable error code (§9) |
 | Resource exhaustion via oversized messages/artifacts | Message/artifact size bounds, rejected (not truncated) when exceeded (§9) |
-| Replay of a stale request after network retry | Idempotency/replay handling keyed on `afl/turnId`/`afl/interactionId`/`afl/requestGuid` — see [`errors.md`](errors.md) |
+| Replay of a stale request after network retry | Idempotency/replay handling keyed on `rta/turnId`/`rta/interactionId`/`rta/requestGuid` — see [`errors.md`](errors.md) |
 
 ## 11. Relationship to other sections
 
-Replay and idempotency semantics using `afl/turnId`, `afl/interactionId`, and
-`afl/requestGuid` (spec.md §3, §10) are specified in
+Replay and idempotency semantics using `rta/turnId`, `rta/interactionId`, and
+`rta/requestGuid` (spec.md §3, §10) are specified in
 [`errors.md`](errors.md), not repeated here.

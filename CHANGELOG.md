@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Agentforce Live A2A Profile Extension are documented here.
+All notable changes to the Realtime Agent A2A Profile Extension are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This
 project versions the extension via its URI

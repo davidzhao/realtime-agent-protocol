@@ -1,4 +1,4 @@
-"""Minimal reference Live layer (A2A client) for the Agentforce Live profile v0.1.
+"""Minimal reference Live layer (A2A client) for the Realtime Agent profile v0.1.
 
 Illustrative only. Connects to the reference reasoner, negotiates the extension via the
 ``A2A-Extensions`` handshake header (spec §4.1), then runs four scenarios and self-checks
@@ -19,7 +19,7 @@ import sys
 from websockets.asyncio.client import connect
 
 from examples.profile_messages import (
-    AFL,
+    RTA,
     EXT_URI,
     K_DIRECTIVE_TYPE,
     K_SEQUENCE_ID,
@@ -72,7 +72,7 @@ class RpcConn:
 
 
 def _seq(event: dict):
-    """afl/sequenceId lives in top-level metadata (artifact events) or in
+    """rta/sequenceId lives in top-level metadata (artifact events) or in
     status.message.metadata (status-channel directives)."""
     top = (event.get("metadata") or {}).get(K_SEQUENCE_ID)
     if top is not None:
@@ -82,7 +82,7 @@ def _seq(event: dict):
 
 
 def _ordered(events: list[dict]) -> list[dict]:
-    """Spec §5 — order by afl/sequenceId; events without one keep their arrival slot."""
+    """Spec §5 — order by rta/sequenceId; events without one keep their arrival slot."""
     return sorted(events, key=lambda e: _seq(e) if _seq(e) is not None else 1e9)
 
 

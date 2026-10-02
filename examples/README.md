@@ -1,6 +1,6 @@
 # Reference implementations
 
-Minimal, **illustrative** implementations of both sides of the Agentforce Live A2A
+Minimal, **illustrative** implementations of both sides of the Realtime Agent A2A
 profile boundary (spec [`../spec.md`](../spec.md)). They are teaching aids, not production
 code — see [`../docs/security.md`](../docs/security.md) before building anything real.
 

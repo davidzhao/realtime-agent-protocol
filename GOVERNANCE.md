@@ -1,6 +1,6 @@
 # Governance
 
-How the Agentforce Live A2A Profile Extension is versioned, changed, and owned. The
+How the Realtime Agent A2A Profile Extension is versioned, changed, and owned. The
 normative contract is [`spec.md`](spec.md); this document governs how it evolves.
 
 ## Ownership

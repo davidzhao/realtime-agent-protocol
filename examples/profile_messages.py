@@ -1,4 +1,4 @@
-"""Builders and constants for the Agentforce Live A2A profile wire messages.
+"""Builders and constants for the Realtime Agent A2A profile wire messages.
 
 Transport-agnostic: these produce the JSON structures that the reasoner server streams
 and the live client consumes. Metadata keys use the full extension-URI prefix, per
@@ -10,14 +10,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 EXT_URI = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1"
-AFL = EXT_URI + "/"
+RTA = EXT_URI + "/"
 
 # Metadata keys (spec §5)
-K_EVENT_TYPE = AFL + "eventType"
-K_DIRECTIVE_TYPE = AFL + "directiveType"
-K_SEQUENCE_ID = AFL + "sequenceId"
-K_TEXT_FORM = AFL + "textForm"
-K_RENDER_MODE = AFL + "renderMode"
+K_EVENT_TYPE = RTA + "eventType"
+K_DIRECTIVE_TYPE = RTA + "directiveType"
+K_SEQUENCE_ID = RTA + "sequenceId"
+K_TEXT_FORM = RTA + "textForm"
+K_RENDER_MODE = RTA + "renderMode"
 
 
 def _now() -> str:

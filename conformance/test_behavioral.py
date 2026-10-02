@@ -10,7 +10,7 @@ import json
 import pytest
 
 from rules import (
-    AFL,
+    RTA,
     effective_directives,
     is_monotonic,
     is_terminal,
@@ -58,9 +58,9 @@ def test_happy_path_sequence_ids_are_monotonic():
 
 def test_order_by_sequence_reorders_out_of_order_events():
     events = [
-        {"metadata": {AFL + "sequenceId": 2}},
-        {"metadata": {AFL + "sequenceId": 0}},
-        {"metadata": {AFL + "sequenceId": 1}},
+        {"metadata": {RTA + "sequenceId": 2}},
+        {"metadata": {RTA + "sequenceId": 0}},
+        {"metadata": {RTA + "sequenceId": 1}},
     ]
     reordered = order_by_sequence(events)
     assert sequence_ids(reordered) == [0, 1, 2]
@@ -96,7 +96,7 @@ def test_barge_in_cancels_then_rolls_forward():
     # an interruption message carries the profile eventType metadata
     interruption = next(
         e for e in seq["events"]
-        if (e.get("metadata") or {}).get(AFL + "eventType") == "interruption"
+        if (e.get("metadata") or {}).get(RTA + "eventType") == "interruption"
     )
     assert interruption["parts"][0]["data"]["interrupted_turn_id"] == "task-102"
     # the interrupted task reaches CANCELED

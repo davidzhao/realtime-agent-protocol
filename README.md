@@ -1,4 +1,4 @@
-# Agentforce Live A2A Profile Extension
+# Realtime Agent A2A Profile Extension
 
 This repository defines an optional A2A profile for real-time, steerable voice and
 multimodal conversations. It standardizes the boundary between a media-facing

@@ -39,7 +39,7 @@ resolves both when hosted at the published URLs and when validated from a local 
 
 ## Metadata keys
 
-The spec abbreviates profile metadata keys with the `afl/` prefix, which expands to
+The spec abbreviates profile metadata keys with the `rta/` prefix, which expands to
 `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/`. On the wire the keys are
 full URIs, so the schemas use the expanded form (e.g.
 `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/eventType`).

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving the **Agentforce Live A2A Profile Extension**.
+Thanks for your interest in improving the **Realtime Agent A2A Profile Extension**.
 This repository is a *specification* project: the normative contract lives in
 [`spec.md`](spec.md), supported by JSON Schemas, reference fixtures, a conformance
 suite, and reference implementations. There is no published package to install.

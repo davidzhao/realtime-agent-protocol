@@ -1,6 +1,6 @@
 # Error and retry policy
 
-This document specifies the error and retry policy for the Agentforce Live A2A
+This document specifies the error and retry policy for the Realtime Agent A2A
 Profile Extension, expanding [`spec.md`](../spec.md) §7.2 and §10. It is a
 draft v0.1 companion document; where the spec is silent, choices made here are
 marked **(design choice)** and are non-normative until adopted into `spec.md`.
@@ -27,9 +27,9 @@ separate, safe (non-sensitive) message per spec.md §7.2.
 
 | Code | Meaning | Retryable | Typical cause |
 | --- | --- | --- | --- |
-| `schema-validation` | A directive, metadata field, or `DataPart` failed schema/field validation | No | Malformed `end_session` fields, invalid `afl/directiveType`, missing required handoff fields (spec.md §7.1, §7.2) |
+| `schema-validation` | A directive, metadata field, or `DataPart` failed schema/field validation | No | Malformed `end_session` fields, invalid `rta/directiveType`, missing required handoff fields (spec.md §7.1, §7.2) |
 | `unsupported-directive` | Reasoner would need a directive type outside the negotiated effective set | No | Directive type not in the intersection of Agent Card and `clientCapabilities` (spec.md §4.2) |
-| `extension-inactive` | Profile data received or required but the extension was not echoed as active | No | Peer sent `afl/*` metadata without a successful `A2A-Extensions` negotiation (spec.md §4.1) |
+| `extension-inactive` | Profile data received or required but the extension was not echoed as active | No | Peer sent `rta/*` metadata without a successful `A2A-Extensions` negotiation (spec.md §4.1) |
 | `auth` | Authentication or authorization failure | No | Invalid/expired credentials (spec.md §10); unauthorized handoff/transfer action (see `docs/security.md` §3) |
 | `rate-limited` | Sender exceeded a rate or size bound | Yes (after backoff) | Message-rate or size-bound violation (spec.md §10; `docs/security.md` §6, §9) |
 | `upstream-timeout` | A dependency (tool, workflow, model call) did not respond in time | Yes | Reasoner-internal timeout waiting on a tool/workflow invocation |
@@ -43,7 +43,7 @@ so Live-layer retry logic can key off them without per-deployment branching.
 ## 3. Retryability
 
 "Retryable" above means: the Live layer MAY resend the same logical request
-(same `afl/turnId`/`afl/interactionId`, new `afl/requestGuid` per §5) after a
+(same `rta/turnId`/`rta/interactionId`, new `rta/requestGuid` per §5) after a
 backoff, and the Reasoner is expected to be able to succeed on a repeat
 attempt without additional caller input. Non-retryable codes indicate the
 request itself is invalid or unauthorized and MUST NOT be retried unmodified;
@@ -64,28 +64,28 @@ capabilities, reauthenticate) or fail the turn to the caller.
 ## 4. Idempotency and replay semantics
 
 spec.md §10 defers replay/idempotency behavior to the identifiers defined in
-spec.md §3: `afl/turnId`, `afl/interactionId`, and `afl/requestGuid`, plus core
+spec.md §3: `rta/turnId`, `rta/interactionId`, and `rta/requestGuid`, plus core
 A2A `contextId`/`taskId`. This profile defines that behavior as follows.
 
 * **`contextId`** scopes idempotency to a single session/call. Replay
   detection MUST NOT cross `contextId` boundaries.
-* **`taskId`** (mirrored by `afl/turnId`) scopes a single turn. A message
-  carrying a `taskId`/`afl/turnId` already seen by the Reasoner for a
+* **`taskId`** (mirrored by `rta/turnId`) scopes a single turn. A message
+  carrying a `taskId`/`rta/turnId` already seen by the Reasoner for a
   completed or in-flight turn on the same `contextId` MUST be treated as a
   retry of that turn, not a new turn — except for the `INPUT_REQUIRED`
   continuation case in spec.md §3, where the same `taskId` legitimately
   carries the follow-up message.
-* **`afl/requestGuid`** scopes an individual chunk/request within a turn.
-  The Reasoner SHOULD treat a repeated `afl/requestGuid` for a chunk it has
+* **`rta/requestGuid`** scopes an individual chunk/request within a turn.
+  The Reasoner SHOULD treat a repeated `rta/requestGuid` for a chunk it has
   already processed as a no-op replay: it MUST NOT re-execute any
   side-effecting work a second time, and SHOULD return the previously
   produced result (or an equivalent terminal state) rather than reprocessing.
-* **`afl/interactionId`** is the analytics/correlation key echoed by the
+* **`rta/interactionId`** is the analytics/correlation key echoed by the
   Reasoner (spec.md §3); it is not itself an idempotency key but SHOULD be
   used to correlate a retried request with its original attempt in logs and
   audit trails (see `docs/security.md` §7).
 * **(design choice)** Recommended dedup window: the Reasoner SHOULD retain
-  enough state to detect a replayed `afl/requestGuid` for at least the
+  enough state to detect a replayed `rta/requestGuid` for at least the
   lifetime of the owning task, and MAY extend that window for a bounded
   period after task completion to absorb late network retries.
 * Retries after a `FAILED` terminal state MUST use a new `taskId` (a new
@@ -118,10 +118,10 @@ starting recommendations for v0.1 implementations, tunable per deployment:
 * This profile provides **at-least-once** delivery semantics for turn
   messages and directive events, not exactly-once: network retries can
   duplicate a request, which is why §4's replay handling on
-  `afl/requestGuid` is required for correctness, not merely an optimization.
-* Ordering within a turn is guaranteed only via `afl/sequenceId` (spec.md
+  `rta/requestGuid` is required for correctness, not merely an optimization.
+* Ordering within a turn is guaranteed only via `rta/sequenceId` (spec.md
   §5), not by transport/channel order. Consumers MUST reorder by
-  `afl/sequenceId` rather than assume in-order delivery across artifact and
+  `rta/sequenceId` rather than assume in-order delivery across artifact and
   status event channels.
 * Reaching a terminal A2A state (`COMPLETED`, `FAILED`, `CANCELED`) is the
   authoritative end-of-turn signal (spec.md §6.2, §8); an SDK-specific

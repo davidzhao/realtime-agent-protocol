@@ -6,7 +6,7 @@ assert against the spec's rules rather than against a particular server.
 
 from __future__ import annotations
 
-AFL = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/"
+RTA = "https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/"
 
 TERMINAL_STATES = {"COMPLETED", "CANCELED", "FAILED", "REJECTED"}
 
@@ -27,8 +27,8 @@ def effective_directives(agent_card: list[str], client: list[str] | None) -> lis
 
 
 def sequence_ids(events: list[dict]) -> list[int]:
-    """Extract afl/sequenceId values (§5) in wire order, skipping events without one."""
-    key = AFL + "sequenceId"
+    """Extract rta/sequenceId values (§5) in wire order, skipping events without one."""
+    key = RTA + "sequenceId"
     out = []
     for ev in events:
         meta = ev.get("metadata") or {}
@@ -43,9 +43,9 @@ def is_monotonic(seq: list[int]) -> bool:
 
 
 def order_by_sequence(events: list[dict]) -> list[dict]:
-    """§5 — the Live layer orders events by afl/sequenceId rather than trusting the
+    """§5 — the Live layer orders events by rta/sequenceId rather than trusting the
     arrival order of separate A2A event channels."""
-    key = AFL + "sequenceId"
+    key = RTA + "sequenceId"
     return sorted(events, key=lambda ev: (ev.get("metadata") or {}).get(key, -1))
 
 

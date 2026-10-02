@@ -87,7 +87,7 @@ prior task already reached terminal `COMPLETED` on the `escalate` directive.
 
 The report uses the same profile envelope as other messages (spec §5):
 
-* `afl/eventType` = `escalationOutcome`
+* `rta/eventType` = `escalationOutcome`
 * A `DataPart` with the fields in §5.2.
 
 This is a new `eventType` value not present in `common.schema.json`'s
@@ -143,7 +143,7 @@ sequenceDiagram
   Live->>Caller: Speak escalate.message
   Live->>Target: Perform transfer (deployment-specific)
   Target-->>Live: Transfer result (out of scope)
-  Live->>Reasoner: ROLE_USER message (new task)<br/>afl/eventType=escalationOutcome<br/>{outcome, detail, escalation_reason}
+  Live->>Reasoner: ROLE_USER message (new task)<br/>rta/eventType=escalationOutcome<br/>{outcome, detail, escalation_reason}
   alt outcome == TRANSFERRED
     Reasoner->>Reasoner: End involvement
   else outcome != TRANSFERRED

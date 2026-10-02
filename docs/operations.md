@@ -1,7 +1,7 @@
 # Operational Profile
 
 Companion to [`../spec.md`](../spec.md): observability, metrics, limits, and
-lifecycle behavior for running the Agentforce Live A2A profile in production.
+lifecycle behavior for running the Realtime Agent A2A profile in production.
 
 ## 1. Status and scope
 
@@ -19,14 +19,14 @@ plus the core A2A identifiers they mirror:
 | Field | Source | Scope | Notes |
 | --- | --- | --- | --- |
 | `contextId` | Core A2A | Session/call | Stable for the life of a call; use as the top-level trace/session key. |
-| `taskId` | Core A2A | Turn | One per user turn; equals `afl/turnId`. |
-| `afl/turnId` | Metadata (spec §3) | Turn | Mirrors `taskId` for joins against systems that don't retain A2A identifiers natively. |
-| `afl/interactionId` | Metadata (spec §3) | Turn | Per-turn analytics key; the Reasoner echoes it back. Use this, not `taskId`, when joining Live-side and Reasoner-side analytics records. |
-| `afl/requestGuid` | Metadata (spec §3) | Chunk | Correlates individual streamed chunks within a turn; use for chunk-level latency traces. |
-| `afl/sequenceId` | Metadata (spec §5) | Directive/artifact | Monotonic within a turn; use to reconstruct true event order, not channel arrival order. |
+| `taskId` | Core A2A | Turn | One per user turn; equals `rta/turnId`. |
+| `rta/turnId` | Metadata (spec §3) | Turn | Mirrors `taskId` for joins against systems that don't retain A2A identifiers natively. |
+| `rta/interactionId` | Metadata (spec §3) | Turn | Per-turn analytics key; the Reasoner echoes it back. Use this, not `taskId`, when joining Live-side and Reasoner-side analytics records. |
+| `rta/requestGuid` | Metadata (spec §3) | Chunk | Correlates individual streamed chunks within a turn; use for chunk-level latency traces. |
+| `rta/sequenceId` | Metadata (spec §5) | Directive/artifact | Monotonic within a turn; use to reconstruct true event order, not channel arrival order. |
 
 **Design choice:** treat `contextId` as the trace root (one trace or trace group
-per call) and `taskId`/`afl/interactionId` as span identifiers within it. The
+per call) and `taskId`/`rta/interactionId` as span identifiers within it. The
 spec does not mandate a tracing model; this mapping is a reasonable default
 given the `contextId` → session, `taskId` → turn structure in spec §3.
 
@@ -44,7 +44,7 @@ None of these are normative; they are a starting taxonomy for implementers.
 | `time_to_first_artifact` | Histogram | Time from turn start to the first `TaskArtifactUpdateEvent` chunk. | Distinguishes "thinking" latency from streaming/TTS latency. |
 | `turn_completion_latency` | Histogram | Time from turn start to terminal state (`COMPLETED`, `FAILED`, `CANCELED`). | End-to-end turn cost, including handoffs. |
 | `barge_in_rate` | Counter/ratio | `tasks/cancel` + `interruption` events per completed turn. | Signals response length/relevance problems when elevated. |
-| `directive_count` | Counter, by `afl/directiveType` | Count of each directive type emitted. | Tracks directive mix; spikes in `escalate`/`end_session` with `ERROR` reason indicate trouble. |
+| `directive_count` | Counter, by `rta/directiveType` | Count of each directive type emitted. | Tracks directive mix; spikes in `escalate`/`end_session` with `ERROR` reason indicate trouble. |
 | `failure_rate` | Counter/ratio | Turns reaching `FAILED` divided by total turns. | Primary reliability SLI. Break down by `status.message` error code (spec §7.2). |
 | `escalation_rate` | Counter/ratio | Turns reaching `escalate`, broken down by `reason` (see [`escalation.md`](escalation.md) §4). | Product/quality signal, not just reliability. |
 | `escalation_outcome_latency` | Histogram | Time between `escalate` `COMPLETED` and the corresponding `escalationOutcome` report. | Detects stalled or lost transfer-outcome reports. |
@@ -56,12 +56,12 @@ None of these are normative; they are a starting taxonomy for implementers.
   creation and propagate the active trace context (e.g., W3C `traceparent`)
   through transport-level headers on the initial WebSocket upgrade or first
   request, consistent with spec §4's transport negotiation.
-* Each turn SHOULD open a child span keyed by `taskId`/`afl/turnId`; each
-  streamed chunk MAY open a further child span keyed by `afl/requestGuid`.
-* Because `afl/sequenceId` — not channel arrival order — is authoritative for
+* Each turn SHOULD open a child span keyed by `taskId`/`rta/turnId`; each
+  streamed chunk MAY open a further child span keyed by `rta/requestGuid`.
+* Because `rta/sequenceId` — not channel arrival order — is authoritative for
   event ordering (spec §5), trace visualizations reconstructing a turn timeline
-  MUST sort by `afl/sequenceId`, not by span start time or ingestion order.
-* Cross-service propagation of `afl/interactionId` alongside standard trace
+  MUST sort by `rta/sequenceId`, not by span start time or ingestion order.
+* Cross-service propagation of `rta/interactionId` alongside standard trace
   headers is RECOMMENDED so that non-tracing analytics pipelines can join on it
   without a full tracing backend.
 
@@ -113,13 +113,13 @@ connection without losing `contextId` continuity.
 
 ### 6.2 Sketch: `draining` event
 
-A future `afl/eventType=draining` status event, analogous to existing directive
+A future `rta/eventType=draining` status event, analogous to existing directive
 events, would signal that the Reasoner intends to close the connection soon but
 the session (`contextId`) remains valid. Sketch shape:
 
 ```json
 {
-  "afl/eventType": "draining",
+  "rta/eventType": "draining",
   "data": {
     "reason": "MAINTENANCE",
     "reconnect_after_ms": 2000,
@@ -133,7 +133,7 @@ filler) rather than treat this as `FAILED`.
 
 ### 6.3 Sketch: `endOfConnection` event
 
-A future `afl/eventType=endOfConnection` event would mark the point at which
+A future `rta/eventType=endOfConnection` event would mark the point at which
 the transport connection actually closes, distinct from `draining` (intent) and
 distinct from a task reaching `CANCELED`/`COMPLETED` (turn-level, not
 connection-level). It would carry the same `resume_token` for correlation.

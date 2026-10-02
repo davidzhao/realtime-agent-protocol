@@ -1,4 +1,4 @@
-# Agentforce Live A2A Profile Extension
+# Realtime Agent A2A Profile Extension
 
 **Status:** Draft v0.1  
 **Extension URI:** `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1`
@@ -51,9 +51,9 @@ The Live layer SHOULD provide these correlation identifiers in metadata:
 
 | Identifier | Metadata key | Purpose |
 | --- | --- | --- |
-| Turn | `afl/turnId` | Mirrors `taskId` for simple joins |
-| Interaction | `afl/interactionId` | Per-turn analytics key; echoed by the Reasoner |
-| Request chunk | `afl/requestGuid` | Chunk-level correlation |
+| Turn | `rta/turnId` | Mirrors `taskId` for simple joins |
+| Interaction | `rta/interactionId` | Per-turn analytics key; echoed by the Reasoner |
+| Request chunk | `rta/requestGuid` | Chunk-level correlation |
 
 ## 4. Discovery, transport, and activation
 
@@ -128,18 +128,18 @@ supported conversational output where possible; otherwise it MUST fail the task.
 ## 5. Profile envelope and ordering
 
 All profile-specific payloads use the extension URI as a metadata-key prefix. In
-examples, `afl/` abbreviates
+examples, `rta/` abbreviates
 `https://schemas.salesforce.com/a2a/ext/realtime-agent/v0.1/`.
 
 | Metadata key | Required on | Meaning |
 | --- | --- | --- |
-| `afl/eventType` | Profile messages/events | `directive`, `interruption`, `conversationHistoryUpdate`, or `clientCapabilities` |
-| `afl/directiveType` | Directive events | Directive name from the negotiated set |
-| `afl/sequenceId` | Directive artifacts and status events | Monotonic, turn-scoped ordering key |
-| `afl/textForm` | Spoken `TextPart` | `normalized` or `transcript` |
-| `afl/renderMode` | Spoken directive `TextPart` | `verbatim` or `paraphrase` |
+| `rta/eventType` | Profile messages/events | `directive`, `interruption`, `conversationHistoryUpdate`, or `clientCapabilities` |
+| `rta/directiveType` | Directive events | Directive name from the negotiated set |
+| `rta/sequenceId` | Directive artifacts and status events | Monotonic, turn-scoped ordering key |
+| `rta/textForm` | Spoken `TextPart` | `normalized` or `transcript` |
+| `rta/renderMode` | Spoken directive `TextPart` | `verbatim` or `paraphrase` |
 
-The Reasoner MUST assign a monotonic `afl/sequenceId` to every directive event.
+The Reasoner MUST assign a monotonic `rta/sequenceId` to every directive event.
 The Live layer MUST order artifacts and status events for the same turn by that
 value, rather than assuming that separate A2A event channels preserve a shared
 order.
@@ -161,8 +161,8 @@ chunk sets `lastChunk: true`.
 
 Each spoken chunk SHOULD contain both:
 
-* a `TextPart` tagged `afl/textForm=normalized`, optimized for TTS; and
-* a `TextPart` tagged `afl/textForm=transcript`, suitable for history and UI.
+* a `TextPart` tagged `rta/textForm=normalized`, optimized for TTS; and
+* a `TextPart` tagged `rta/textForm=transcript`, suitable for history and UI.
 
 An untagged text part is interpreted as transcript. Artifacts or parts SHOULD also
 carry sequence and timestamp metadata.
@@ -173,8 +173,8 @@ the end-of-turn signal.
 
 ## 7. Directives
 
-Every directive is an `afl/eventType=directive` payload and MUST have
-`afl/directiveType` and `afl/sequenceId` metadata. Its channel is determined by
+Every directive is an `rta/eventType=directive` payload and MUST have
+`rta/directiveType` and `rta/sequenceId` metadata. Its channel is determined by
 its purpose:
 
 | Directive | A2A channel and state | Meaning |
@@ -226,7 +226,7 @@ The Live layer performs the transfer and reports its outcome in its next
 ## 8. Interruption and history backfill
 
 On barge-in, the Live layer MUST send `tasks/cancel` for the in-flight task and
-MUST send an `afl/eventType=interruption` `DataPart` containing:
+MUST send an `rta/eventType=interruption` `DataPart` containing:
 
 ```json
 {

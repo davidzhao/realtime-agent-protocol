@@ -1,4 +1,4 @@
-"""Minimal reference Reasoner (A2A server) for the Agentforce Live profile v0.1.
+"""Minimal reference Reasoner (A2A server) for the Realtime Agent profile v0.1.
 
 Illustrative only. Speaks a tiny JSON-RPC-over-WebSocket framing: the client sends
 requests ``{"jsonrpc":"2.0","id":N,"method":M,"params":P}``; the server streams profile
